@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const express = require('express');
 const { createDatabase } = require('./database');
 const { LRUCache } = require('./cache');
@@ -29,6 +30,9 @@ function createApp(db) {
 
   const app = express();
   app.use(express.json());
+
+  // Serve the browser UI from /public
+  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   // Attach shared resources to app locals so routers can access them
   app.locals.db = db;

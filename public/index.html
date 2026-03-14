@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreelanceHub</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f5f7fa;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --primary:  #4f46e5;
+      --primary-h:#4338ca;
+      --accent:   #10b981;
+      --danger:   #ef4444;
+      --text:     #1e293b;
+      --muted:    #64748b;
+      --radius:   10px;
+      --shadow:   0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      white-space: nowrap;
+    }
+    nav { display: flex; gap: 4px; }
+    nav button {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,.75);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .9rem;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+    nav button:hover  { background: rgba(255,255,255,.12); color: #fff; }
+    nav button.active { background: rgba(255,255,255,.2);  color: #fff; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    #currentUserBadge {
+      background: rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .82rem;
+      display: none;
+    }
+    #logoutBtn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .82rem;
+      display: none;
+    }
+    #logoutBtn:hover { background: rgba(255,255,255,.25); }
+
+    /* ── Layout ── */
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Cards ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
+    .card-title { font-weight: 600; font-size: 1rem; }
+    .card-meta  { font-size: .82rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
+    .card-desc  { font-size: .88rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+
+    /* ── Page toolbar ── */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .toolbar h2 { font-size: 1.25rem; margin-right: auto; }
+
+    /* ── Forms / Inputs ── */
+    select, input[type=text], input[type=email], input[type=number], textarea {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: .9rem;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color .15s;
+    }
+    select:focus, input:focus, textarea:focus { border-color: var(--primary); }
+    textarea { resize: vertical; min-height: 80px; width: 100%; }
+    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 4px; color: var(--muted); }
+    .form-group { display: flex; flex-direction: column; gap: 2px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 600;
+      transition: background .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary  { background: var(--primary);  color: #fff; }
+    .btn-primary:hover  { background: var(--primary-h); }
+    .btn-success  { background: var(--accent);   color: #fff; }
+    .btn-success:hover  { background: #059669; }
+    .btn-outline  {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+    .btn-sm { padding: 5px 12px; font-size: .8rem; }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,.25);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal h3 { font-size: 1.1rem; }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+    .close-btn {
+      position: absolute; top: 10px; right: 14px;
+      background: none; border: none; font-size: 1.4rem;
+      cursor: pointer; color: var(--muted);
+    }
+
+    /* ── Detail panel ── */
+    .detail-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 16px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .detail-panel.open { display: block; }
+    .detail-panel h3 { font-size: 1.2rem; margin-bottom: 12px; }
+    .detail-meta { font-size: .85rem; color: var(--muted); margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .detail-desc { font-size: .92rem; line-height: 1.6; margin-bottom: 16px; }
+    .detail-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty p { font-size: .95rem; }
+
+    /* ── Alert / Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--text);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: .88rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+      max-width: 320px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: var(--danger); }
+    #toast.success { background: var(--accent); }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; gap: 8px; align-items: center; margin-top: 20px; }
+    .pagination button { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: .85rem; }
+    .pagination button:disabled { opacity: .4; cursor: default; }
+    .pagination button:not(:disabled):hover { border-color: var(--primary); color: var(--primary); }
+    .pagination span { font-size: .85rem; color: var(--muted); }
+
+    /* ── Register / profile page ── */
+    .auth-card {
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .auth-card h2 { font-size: 1.3rem; }
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+    /* ── Spinner ── */
+    .spinner { text-align: center; padding: 40px; color: var(--muted); font-size: .9rem; }
+
+    /* ── Freelancer card ── */
+    .freelancer-card { align-items: flex-start; }
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .freelancer-row { display: flex; gap: 12px; align-items: flex-start; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">🚀 FreelanceHub</div>
+  <nav>
+    <button class="active" data-page="jobs">Jobs</button>
+    <button data-page="gigs">Gigs</button>
+    <button data-page="freelancers">Freelancers</button>
+    <button data-page="account">Account</button>
+  </nav>
+  <div class="header-right">
+    <span id="currentUserBadge"></span>
+    <button id="logoutBtn">Log out</button>
+  </div>
+</header>
+
+<!-- ── Toast ────────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<!-- ── Modal overlay ────────────────────────────────────────────── -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- ── Main content ──────────────────────────────────────────────── -->
+<main>
+
+  <!-- JOBS PAGE -->
+  <div class="page active" id="page-jobs">
+    <div class="toolbar">
+      <h2>Open Jobs</h2>
+      <select id="jobCategoryFilter">
+        <option value="">All categories</option>
+        <option>web development</option>
+        <option>mobile development</option>
+        <option>design</option>
+        <option>writing</option>
+        <option>marketing</option>
+        <option>data science</option>
+        <option>other</option>
+      </select>
+      <button class="btn btn-primary" id="postJobBtn">+ Post a Job</button>
+    </div>
+    <div id="jobsList"><div class="spinner">Loading…</div></div>
+    <div class="pagination" id="jobsPagination"></div>
+    <div class="detail-panel" id="jobDetail"></div>
+  </div>
+
+  <!-- GIGS PAGE -->
+  <div class="page" id="page-gigs">
+    <div class="toolbar">
+      <h2>Freelancer Gigs</h2>
+      <select id="gigCategoryFilter">
+        <option value="">All categories</option>
+        <option>web development</option>
+        <option>mobile development</option>
+        <option>design</option>
+        <option>writing</option>
+        <option>marketing</option>
+        <option>data science</option>
+        <option>other</option>
+      </select>
+      <button class="btn btn-primary" id="postGigBtn">+ Post a Gig</button>
+    </div>
+    <div id="gigsList"><div class="spinner">Loading…</div></div>
+    <div class="pagination" id="gigsPagination"></div>
+    <div class="detail-panel" id="gigDetail"></div>
+  </div>
+
+  <!-- FREELANCERS PAGE -->
+  <div class="page" id="page-freelancers">
+    <div class="toolbar"><h2>Freelancers</h2></div>
+    <div id="freelancersList"><div class="spinner">Loading…</div></div>
+    <div class="pagination" id="freelancersPagination"></div>
+  </div>
+
+  <!-- ACCOUNT PAGE -->
+  <div class="page" id="page-account">
+    <div class="auth-card" id="authCard">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentUser = JSON.parse(localStorage.getItem('fhUser') || 'null');
+let jobsOffset = 0, jobsTotal = 0;
+let gigsOffset = 0, gigsTotal = 0;
+let freelancersOffset = 0, freelancersTotal = 0;
+const PAGE_LIMIT = 9;
+let activeJobId = null, activeGigId = null;
+
+// ── Utilities ────────────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type ? `show ${type}` : 'show';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body !== undefined) opts.body = JSON.stringify(body);
+    const res = await fetch('/api' + path, opts);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+function fmtMoney(n) { return n != null ? `$${Number(n).toLocaleString()}` : '—'; }
+function fmtDate(ts) {
+  if (!ts) return '—';
+  const d = new Date(typeof ts === 'number' ? ts * 1000 : ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function initials(name) { return (name || '?').slice(0, 2).toUpperCase(); }
+function statusBadge(s) {
+  const map = { open: 'badge-green', active: 'badge-green', pending: 'badge-yellow',
+                closed: 'badge-blue', completed: 'badge-blue', rejected: 'badge-red',
+                withdrawn: 'badge-red' };
+  return `<span class="badge ${map[s] || 'badge-blue'}">${s}</span>`;
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+function updateHeader() {
+  const badge = document.getElementById('currentUserBadge');
+  const logout = document.getElementById('logoutBtn');
+  if (currentUser) {
+    badge.textContent = `${currentUser.username} (${currentUser.role})`;
+    badge.style.display = 'block';
+    logout.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+    logout.style.display = 'none';
+  }
+}
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  currentUser = null;
+  localStorage.removeItem('fhUser');
+  updateHeader();
+  renderAccountPage();
+  toast('Logged out');
+});
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  const pg = document.getElementById(`page-${name}`);
+  if (pg) pg.classList.add('active');
+  if (name === 'jobs')        { jobsOffset = 0; loadJobs(); }
+  if (name === 'gigs')        { gigsOffset = 0; loadGigs(); }
+  if (name === 'freelancers') { freelancersOffset = 0; loadFreelancers(); }
+  if (name === 'account')     renderAccountPage();
+}
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => showPage(btn.dataset.page));
+});
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function openModal(title, bodyHTML, footerHTML) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modalFooter').innerHTML = footerHTML || '';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) closeModal();
+});
+
+// ── JOBS ─────────────────────────────────────────────────────────────────────
+async function loadJobs() {
+  const cat = document.getElementById('jobCategoryFilter').value;
+  document.getElementById('jobsList').innerHTML = '<div class="spinner">Loading…</div>';
+  closeJobDetail();
+  try {
+    const params = new URLSearchParams({ limit: PAGE_LIMIT, offset: jobsOffset });
+    if (cat) params.set('category', cat);
+    const data = await api('GET', `/jobs?${params}`);
+    jobsTotal = data.total;
+    renderJobs(data.data);
+    renderPagination('jobs', jobsOffset, jobsTotal);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderJobs(jobs) {
+  const el = document.getElementById('jobsList');
+  if (!jobs.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">📋</div><p>No jobs found. Be the first to post one!</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card-grid">${jobs.map(j => `
+    <div class="card" data-job-id="${j.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div class="card-title">${esc(j.title)}</div>
+        ${statusBadge(j.status)}
+      </div>
+      <div class="card-desc">${esc(j.description)}</div>
+      <div class="card-meta">
+        <span>💰 Budget: ${fmtMoney(j.budget)}</span>
+        <span>📁 ${esc(j.category)}</span>
+        <span>👤 ${esc(j.client_username)}</span>
+        <span>📨 ${j.bid_count} bid${j.bid_count !== 1 ? 's' : ''}</span>
+        <span>📅 ${fmtDate(j.created_at)}</span>
+      </div>
+    </div>`).join('')}</div>`;
+  el.querySelectorAll('[data-job-id]').forEach(card => {
+    card.addEventListener('click', () => openJobDetail(+card.dataset.jobId));
+  });
+}
+
+async function openJobDetail(id) {
+  activeJobId = id;
+  const panel = document.getElementById('jobDetail');
+  panel.innerHTML = '<div class="spinner">Loading…</div>';
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  try {
+    const j = await api('GET', `/jobs/${id}`);
+    const canBid = currentUser && currentUser.role === 'freelancer';
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <h3>${esc(j.title)}</h3>
+        <div style="display:flex;gap:6px;align-items:center">${statusBadge(j.status)}
+          <button class="btn btn-outline btn-sm" onclick="closeJobDetail()">✕ Close</button></div>
+      </div>
+      <div class="detail-meta">
+        <span>💰 Budget: ${fmtMoney(j.budget)}</span>
+        <span>📁 ${esc(j.category)}</span>
+        <span>👤 Client: ${esc(j.client_username)}</span>
+        <span>📨 ${j.bid_count} bid${j.bid_count !== 1 ? 's' : ''}${j.lowest_bid != null ? ` · Lowest: ${fmtMoney(j.lowest_bid)}` : ''}</span>
+        <span>📅 Posted: ${fmtDate(j.created_at)}</span>
+      </div>
+      <div class="detail-desc">${esc(j.description)}</div>
+      <div class="detail-actions">
+        ${canBid && j.status === 'open' ? `<button class="btn btn-success" onclick="showBidForm(${j.id}, ${j.budget})">Submit a Bid</button>` : ''}
+        ${!currentUser ? `<span style="font-size:.85rem;color:var(--muted)">Log in as a freelancer to bid on this job.</span>` : ''}
+      </div>`;
+  } catch (e) { panel.innerHTML = `<p style="color:var(--danger)">${e.message}</p>`; }
+}
+
+function closeJobDetail() {
+  activeJobId = null;
+  const p = document.getElementById('jobDetail');
+  p.classList.remove('open');
+  p.innerHTML = '';
+}
+
+function showBidForm(jobId, budget) {
+  if (!currentUser) { toast('Please log in first', 'error'); return; }
+  openModal('Submit a Bid', `
+    <div class="form-row">
+      <div class="form-group">
+        <label>Bid Amount (USD)</label>
+        <input type="number" id="bidAmount" min="1" placeholder="e.g. 500" style="width:100%" />
+      </div>
+      <div class="form-group">
+        <label>Delivery (days)</label>
+        <input type="number" id="bidDays" min="1" placeholder="e.g. 7" style="width:100%" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Proposal</label>
+      <textarea id="bidProposal" placeholder="Why are you the best fit for this job?"></textarea>
+    </div>
+  `, `
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-success" onclick="submitBid(${jobId})">Submit Bid</button>
+  `);
+}
+
+async function submitBid(jobId) {
+  const amount = parseFloat(document.getElementById('bidAmount').value);
+  const delivery_days = parseInt(document.getElementById('bidDays').value, 10);
+  const proposal = document.getElementById('bidProposal').value.trim();
+  if (!amount || amount <= 0) { toast('Enter a valid bid amount', 'error'); return; }
+  if (!delivery_days || delivery_days <= 0) { toast('Enter delivery days', 'error'); return; }
+  if (!proposal) { toast('A proposal is required', 'error'); return; }
+  try {
+    await api('POST', '/bids', { job_id: jobId, freelancer_id: currentUser.id, amount, delivery_days, proposal });
+    closeModal();
+    toast('Bid submitted!', 'success');
+    if (activeJobId === jobId) openJobDetail(jobId);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+document.getElementById('jobCategoryFilter').addEventListener('change', () => { jobsOffset = 0; loadJobs(); });
+
+document.getElementById('postJobBtn').addEventListener('click', () => {
+  if (!currentUser) { toast('Log in as a client to post jobs', 'error'); return; }
+  if (currentUser.role !== 'client') { toast('Only clients can post jobs', 'error'); return; }
+  openModal('Post a New Job', `
+    <div class="form-group"><label>Title</label><input id="jTitle" type="text" placeholder="e.g. Build a React dashboard" style="width:100%" /></div>
+    <div class="form-group"><label>Description</label><textarea id="jDesc" placeholder="Describe the job in detail…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label>
+        <select id="jCat" style="width:100%">
+          <option value="">Select…</option>
+          <option>web development</option><option>mobile development</option>
+          <option>design</option><option>writing</option>
+          <option>marketing</option><option>data science</option><option>other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Budget (USD)</label><input id="jBudget" type="number" min="1" placeholder="e.g. 1000" style="width:100%" /></div>
+    </div>
+  `, `
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitJob()">Post Job</button>
+  `);
+});
+
+async function submitJob() {
+  const title = document.getElementById('jTitle').value.trim();
+  const description = document.getElementById('jDesc').value.trim();
+  const category = document.getElementById('jCat').value;
+  const budget = parseFloat(document.getElementById('jBudget').value);
+  if (!title || !description || !category || !budget) { toast('All fields are required', 'error'); return; }
+  try {
+    await api('POST', '/jobs', { client_id: currentUser.id, title, description, category, budget });
+    closeModal();
+    toast('Job posted!', 'success');
+    jobsOffset = 0;
+    loadJobs();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ── GIGS ─────────────────────────────────────────────────────────────────────
+async function loadGigs() {
+  const cat = document.getElementById('gigCategoryFilter').value;
+  document.getElementById('gigsList').innerHTML = '<div class="spinner">Loading…</div>';
+  closeGigDetail();
+  try {
+    const params = new URLSearchParams({ limit: PAGE_LIMIT, offset: gigsOffset });
+    if (cat) params.set('category', cat);
+    const data = await api('GET', `/gigs?${params}`);
+    gigsTotal = data.total;
+    renderGigs(data.data);
+    renderPagination('gigs', gigsOffset, gigsTotal);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderGigs(gigs) {
+  const el = document.getElementById('gigsList');
+  if (!gigs.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🛠️</div><p>No gigs found. Post yours!</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card-grid">${gigs.map(g => `
+    <div class="card" data-gig-id="${g.id}">
+      <div class="card-title">${esc(g.title)}</div>
+      <div class="card-desc">${esc(g.description)}</div>
+      <div class="card-meta">
+        <span>💵 ${fmtMoney(g.price)}</span>
+        <span>⏱ ${g.delivery_days} day${g.delivery_days !== 1 ? 's' : ''}</span>
+        <span>📁 ${esc(g.category)}</span>
+        <span>👤 ${esc(g.username)}</span>
+        ${g.hourly_rate ? `<span>⏰ ${fmtMoney(g.hourly_rate)}/hr</span>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+  el.querySelectorAll('[data-gig-id]').forEach(card => {
+    card.addEventListener('click', () => openGigDetail(+card.dataset.gigId));
+  });
+}
+
+async function openGigDetail(id) {
+  activeGigId = id;
+  const panel = document.getElementById('gigDetail');
+  panel.innerHTML = '<div class="spinner">Loading…</div>';
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  try {
+    const g = await api('GET', `/gigs/${id}`);
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <h3>${esc(g.title)}</h3>
+        <button class="btn btn-outline btn-sm" onclick="closeGigDetail()">✕ Close</button>
+      </div>
+      <div class="detail-meta">
+        <span>💵 Price: ${fmtMoney(g.price)}</span>
+        <span>⏱ Delivery: ${g.delivery_days} days</span>
+        <span>📁 ${esc(g.category)}</span>
+        <span>👤 By: ${esc(g.username)}</span>
+        ${g.hourly_rate ? `<span>⏰ ${fmtMoney(g.hourly_rate)}/hr</span>` : ''}
+        <span>📅 Posted: ${fmtDate(g.created_at)}</span>
+      </div>
+      <div class="detail-desc" style="-webkit-line-clamp:unset">${esc(g.description)}</div>`;
+  } catch (e) { panel.innerHTML = `<p style="color:var(--danger)">${e.message}</p>`; }
+}
+
+function closeGigDetail() {
+  activeGigId = null;
+  const p = document.getElementById('gigDetail');
+  p.classList.remove('open');
+  p.innerHTML = '';
+}
+
+document.getElementById('gigCategoryFilter').addEventListener('change', () => { gigsOffset = 0; loadGigs(); });
+
+document.getElementById('postGigBtn').addEventListener('click', () => {
+  if (!currentUser) { toast('Log in as a freelancer to post gigs', 'error'); return; }
+  if (currentUser.role !== 'freelancer') { toast('Only freelancers can post gigs', 'error'); return; }
+  openModal('Post a New Gig', `
+    <div class="form-group"><label>Title</label><input id="gTitle" type="text" placeholder="e.g. I will build your React app" style="width:100%" /></div>
+    <div class="form-group"><label>Description</label><textarea id="gDesc" placeholder="Describe what you offer…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label>
+        <select id="gCat" style="width:100%">
+          <option value="">Select…</option>
+          <option>web development</option><option>mobile development</option>
+          <option>design</option><option>writing</option>
+          <option>marketing</option><option>data science</option><option>other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Price (USD)</label><input id="gPrice" type="number" min="1" placeholder="e.g. 500" style="width:100%" /></div>
+    </div>
+    <div class="form-group"><label>Delivery (days)</label><input id="gDays" type="number" min="1" placeholder="e.g. 7" style="width:100%" /></div>
+  `, `
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="submitGig()">Post Gig</button>
+  `);
+});
+
+async function submitGig() {
+  const title = document.getElementById('gTitle').value.trim();
+  const description = document.getElementById('gDesc').value.trim();
+  const category = document.getElementById('gCat').value;
+  const price = parseFloat(document.getElementById('gPrice').value);
+  const delivery_days = parseInt(document.getElementById('gDays').value, 10);
+  if (!title || !description || !category || !price || !delivery_days) { toast('All fields are required', 'error'); return; }
+  try {
+    await api('POST', '/gigs', { user_id: currentUser.id, title, description, category, price, delivery_days });
+    closeModal();
+    toast('Gig posted!', 'success');
+    gigsOffset = 0;
+    loadGigs();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ── FREELANCERS ───────────────────────────────────────────────────────────────
+async function loadFreelancers() {
+  document.getElementById('freelancersList').innerHTML = '<div class="spinner">Loading…</div>';
+  try {
+    const params = new URLSearchParams({ limit: PAGE_LIMIT, offset: freelancersOffset, role: 'freelancer' });
+    const data = await api('GET', `/users?${params}`);
+    freelancersTotal = data.total;
+    renderFreelancers(data.data);
+    renderPagination('freelancers', freelancersOffset, freelancersTotal);
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function renderFreelancers(users) {
+  const el = document.getElementById('freelancersList');
+  if (!users.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">👤</div><p>No freelancers registered yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card-grid">${users.map(u => `
+    <div class="card freelancer-card">
+      <div class="freelancer-row">
+        <div class="avatar">${initials(u.username)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-title">${esc(u.username)}</div>
+          <div class="card-meta">
+            ${u.hourly_rate ? `<span>⏰ ${fmtMoney(u.hourly_rate)}/hr</span>` : ''}
+            ${u.skills ? `<span>🛠 ${esc(u.skills)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${u.bio ? `<div class="card-desc">${esc(u.bio)}</div>` : ''}
+    </div>`).join('')}</div>`;
+}
+
+// ── PAGINATION ────────────────────────────────────────────────────────────────
+function renderPagination(section, offset, total) {
+  const el = document.getElementById(`${section}Pagination`);
+  const page = Math.floor(offset / PAGE_LIMIT) + 1;
+  const pages = Math.ceil(total / PAGE_LIMIT) || 1;
+  el.innerHTML = `
+    <button ${offset === 0 ? 'disabled' : ''} onclick="${section}Prev()">‹ Prev</button>
+    <span>Page ${page} of ${pages} &nbsp;(${total} total)</span>
+    <button ${offset + PAGE_LIMIT >= total ? 'disabled' : ''} onclick="${section}Next()">Next ›</button>`;
+}
+function jobsPrev()  { jobsOffset  = Math.max(0, jobsOffset  - PAGE_LIMIT); loadJobs();        }
+function jobsNext()  { jobsOffset += PAGE_LIMIT; loadJobs(); }
+function gigsPrev()  { gigsOffset  = Math.max(0, gigsOffset  - PAGE_LIMIT); loadGigs();        }
+function gigsNext()  { gigsOffset += PAGE_LIMIT; loadGigs(); }
+function freelancersPrev() { freelancersOffset = Math.max(0, freelancersOffset - PAGE_LIMIT); loadFreelancers(); }
+function freelancersNext() { freelancersOffset += PAGE_LIMIT; loadFreelancers(); }
+
+// ── ACCOUNT PAGE ─────────────────────────────────────────────────────────────
+function renderAccountPage() {
+  const card = document.getElementById('authCard');
+  if (currentUser) {
+    card.innerHTML = `
+      <h2>Your Profile</h2>
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="avatar" style="width:52px;height:52px;font-size:1.3rem">${initials(currentUser.username)}</div>
+        <div>
+          <div style="font-weight:700;font-size:1.1rem">${esc(currentUser.username)}</div>
+          <div style="color:var(--muted);font-size:.85rem">${esc(currentUser.email)} · ${currentUser.role}</div>
+        </div>
+      </div>
+      <hr class="section-divider" />
+      <div class="form-group"><label>Bio</label>
+        <textarea id="editBio">${esc(currentUser.bio || '')}</textarea></div>
+      <div class="form-group"><label>Skills</label>
+        <input id="editSkills" type="text" value="${esc(currentUser.skills || '')}" placeholder="e.g. React, Node.js" style="width:100%" /></div>
+      ${currentUser.role === 'freelancer' ? `
+        <div class="form-group"><label>Hourly Rate (USD)</label>
+          <input id="editRate" type="number" value="${currentUser.hourly_rate || ''}" placeholder="e.g. 75" style="width:100%" /></div>` : ''}
+      <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>`;
+  } else {
+    card.innerHTML = `
+      <h2>Join FreelanceHub</h2>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button class="btn ${_authTab==='register'?'btn-primary':'btn-outline'}" onclick="setAuthTab('register')">Register</button>
+        <button class="btn ${_authTab==='login'?'btn-primary':'btn-outline'}"    onclick="setAuthTab('login')">Log In</button>
+      </div>
+      ${_authTab === 'register' ? registerForm() : loginForm()}`;
+  }
+}
+
+let _authTab = 'register';
+function setAuthTab(tab) { _authTab = tab; renderAccountPage(); }
+
+function registerForm() {
+  return `
+    <div class="form-group"><label>Username</label><input id="regUser" type="text" placeholder="johndoe" style="width:100%" /></div>
+    <div class="form-group"><label>Email</label><input id="regEmail" type="email" placeholder="john@example.com" style="width:100%" /></div>
+    <div class="form-group"><label>I am a…</label>
+      <select id="regRole" style="width:100%"><option value="freelancer">Freelancer</option><option value="client">Client</option></select></div>
+    <div class="form-group"><label>Bio (optional)</label><textarea id="regBio" placeholder="Tell us about yourself…"></textarea></div>
+    <div class="form-group"><label>Skills (optional)</label><input id="regSkills" type="text" placeholder="e.g. React, Node.js" style="width:100%" /></div>
+    <div class="form-group"><label>Hourly Rate, USD (optional)</label><input id="regRate" type="number" placeholder="e.g. 75" style="width:100%" /></div>
+    <button class="btn btn-primary" onclick="register()">Create Account</button>`;
+}
+
+function loginForm() {
+  return `
+    <p style="font-size:.85rem;color:var(--muted)">Enter the username you registered with.</p>
+    <div class="form-group"><label>Username</label>
+      <input id="loginUser" type="text" placeholder="johndoe" style="width:100%" /></div>
+    <button class="btn btn-primary" onclick="login()">Log In</button>`;
+}
+
+async function register() {
+  const username = document.getElementById('regUser').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const role     = document.getElementById('regRole').value;
+  const bio      = document.getElementById('regBio').value.trim() || undefined;
+  const skills   = document.getElementById('regSkills').value.trim() || undefined;
+  const hr       = parseFloat(document.getElementById('regRate').value) || undefined;
+  if (!username || !email) { toast('Username and email are required', 'error'); return; }
+  try {
+    const user = await api('POST', '/users', { username, email, role, bio, skills, hourly_rate: hr });
+    currentUser = user;
+    localStorage.setItem('fhUser', JSON.stringify(user));
+    updateHeader();
+    renderAccountPage();
+    toast(`Welcome, ${user.username}!`, 'success');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function login() {
+  const username = document.getElementById('loginUser').value.trim();
+  if (!username) { toast('Enter your username', 'error'); return; }
+  try {
+    const data = await api('GET', `/users?limit=1&offset=0`);
+    // Search for user by username
+    const all = await api('GET', `/users?limit=100&offset=0`);
+    const found = all.data.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (!found) { toast('User not found — check your username', 'error'); return; }
+    const full = await api('GET', `/users/${found.id}`);
+    currentUser = full;
+    localStorage.setItem('fhUser', JSON.stringify(full));
+    updateHeader();
+    renderAccountPage();
+    toast(`Welcome back, ${full.username}!`, 'success');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function saveProfile() {
+  const bio   = document.getElementById('editBio').value.trim() || undefined;
+  const skills = document.getElementById('editSkills').value.trim() || undefined;
+  const rateEl = document.getElementById('editRate');
+  const hourly_rate = rateEl ? parseFloat(rateEl.value) || undefined : undefined;
+  try {
+    const updated = await api('PATCH', `/users/${currentUser.id}`, { bio, skills, hourly_rate });
+    currentUser = { ...currentUser, ...updated };
+    localStorage.setItem('fhUser', JSON.stringify(currentUser));
+    updateHeader();
+    renderAccountPage();
+    toast('Profile updated!', 'success');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ── HTML escape ───────────────────────────────────────────────────────────────
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+updateHeader();
+loadJobs();
+</script>
+</body>
+</html>
