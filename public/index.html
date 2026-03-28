@@ -134,6 +134,7 @@
   <button onclick="showPage('store')">Coin Store</button>
   <button onclick="showPage('leaderboard')">Leaderboard</button>
   <button onclick="showPage('revenue')" style="border-color:#ff8c00;color:#ff8c00;">📊 Revenue</button>
+  <button onclick="showPage('help')" style="border-color:#38bdf8;color:#38bdf8;">❓ How to Play</button>
   <span class="coin-badge" id="coinBadge">🪙 —</span>
 </nav>
 
@@ -267,6 +268,134 @@
   <div id="rev-by-pack"></div>
   <h2 style="margin-top:20px;">Recent Purchases</h2>
   <div id="rev-recent"></div>
+</div>
+
+<!-- ── HOW TO PLAY ── -->
+<div id="page-help" class="page">
+  <h1>❓ How to Play</h1>
+  <p class="sub">Everything you need to get started and dominate the pitch.</p>
+
+  <!-- BIG URL CALLOUT -->
+  <div style="background:linear-gradient(135deg,#145e2d,#1a7a3c);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:28px;border:2px solid var(--gold);">
+    <div style="font-size:.9rem;color:var(--green-light);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;font-weight:600;">Open this URL in your browser to play</div>
+    <div style="font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:1px;word-break:break-all;">http://localhost:3000</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-top:10px;">Make sure the server is running first: <code style="background:rgba(0,0,0,.4);padding:2px 8px;border-radius:4px;">npm start</code></div>
+  </div>
+
+  <!-- STEP-BY-STEP GUIDE -->
+  <div style="display:grid;gap:16px;">
+
+    <div class="card">
+      <h2>Step 1 — Start the Server</h2>
+      <p style="color:var(--muted);margin-bottom:12px;">Run these two commands in your terminal once:</p>
+      <pre style="background:#0d1b2a;border-radius:8px;padding:14px;font-size:.9rem;overflow-x:auto;color:#86efac;">npm install
+npm start</pre>
+      <p style="color:var(--muted);margin-top:10px;font-size:.9rem;">You'll see: <em style="color:var(--gold);">⚽ Soccer Manager running on http://localhost:3000</em></p>
+    </div>
+
+    <div class="card">
+      <h2>Step 2 — Open the Game</h2>
+      <p style="color:var(--muted);margin-bottom:14px;">Navigate to the URL in any browser on the same machine:</p>
+      <div style="font-size:1.4rem;font-weight:700;color:var(--gold);background:#0d1b2a;border-radius:8px;padding:12px 18px;display:inline-block;">http://localhost:3000</div>
+      <p style="color:var(--muted);margin-top:12px;font-size:.9rem;">The game home screen loads. Fill in <strong>Username</strong>, <strong>Email</strong>, and an optional <strong>Team Name</strong>, then click <strong>Create / Load Manager</strong>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Step 3 — Buy Coins</h2>
+      <p style="color:var(--muted);margin-bottom:12px;">Go to <strong>Coin Store</strong> and buy a coin pack. Coins are used to open player packs.</p>
+      <table style="width:100%;font-size:.85rem;border-collapse:collapse;">
+        <thead><tr style="color:var(--muted);">
+          <th style="text-align:left;padding:6px 8px;">Pack</th>
+          <th style="text-align:right;padding:6px 8px;">Coins</th>
+          <th style="text-align:right;padding:6px 8px;">Price</th>
+          <th style="text-align:right;padding:6px 8px;">Bonus</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:5px 8px;">Starter Pack</td><td style="text-align:right;color:var(--gold);">500</td><td style="text-align:right;">$0.99</td><td style="text-align:right;">—</td></tr>
+          <tr><td style="padding:5px 8px;">Player Pack</td><td style="text-align:right;color:var(--gold);">1,575</td><td style="text-align:right;">$2.99</td><td style="text-align:right;color:#48bb78;">+5%</td></tr>
+          <tr><td style="padding:5px 8px;">Club Pack</td><td style="text-align:right;color:var(--gold);">4,600</td><td style="text-align:right;">$6.99</td><td style="text-align:right;color:#48bb78;">+15%</td></tr>
+          <tr><td style="padding:5px 8px;">League Pack</td><td style="text-align:right;color:var(--gold);">12,500</td><td style="text-align:right;">$14.99</td><td style="text-align:right;color:#48bb78;">+25%</td></tr>
+          <tr><td style="padding:5px 8px;">Elite Bundle</td><td style="text-align:right;color:var(--gold);">35,000</td><td style="text-align:right;">$29.99</td><td style="text-align:right;color:#48bb78;">+40%</td></tr>
+          <tr><td style="padding:5px 8px;">Champions Bundle</td><td style="text-align:right;color:var(--gold);">120,000</td><td style="text-align:right;">$79.99</td><td style="text-align:right;color:#48bb78;">+60%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Step 4 — Open Player Packs</h2>
+      <p style="color:var(--muted);margin-bottom:12px;">Go to <strong>Open Packs</strong> and spend coins to receive random players.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-weight:700;">Standard</div>
+          <div style="color:var(--gold);font-size:1.2rem;font-weight:900;">5 players</div>
+          <div style="color:var(--muted);font-size:.8rem;">🪙 500 coins</div>
+          <div style="font-size:.75rem;margin-top:6px;">Leg 1% · Epic 4% · Rare 25%</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--rare);">
+          <div style="font-weight:700;">Premium</div>
+          <div style="color:var(--gold);font-size:1.2rem;font-weight:900;">8 players</div>
+          <div style="color:var(--muted);font-size:.8rem;">🪙 1,500 coins</div>
+          <div style="font-size:.75rem;margin-top:6px;">Leg 5% · Epic 15% · Rare 40%</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--legendary);">
+          <div style="font-weight:700;color:var(--legendary);">Elite</div>
+          <div style="color:var(--gold);font-size:1.2rem;font-weight:900;">12 players</div>
+          <div style="color:var(--muted);font-size:.8rem;">🪙 4,000 coins</div>
+          <div style="font-size:.75rem;margin-top:6px;">Leg 15% · Epic 35% · Rare 40%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Step 5 — Build Your Squad</h2>
+      <p style="color:var(--muted);">Go to <strong>My Squad</strong>. Click <strong>+ Add to Squad</strong> on your best players (max 11). Your squad's average rating determines your match results — always put your highest-rated players in!</p>
+    </div>
+
+    <div class="card">
+      <h2>Step 6 — Play Matches &amp; Earn Coins</h2>
+      <p style="color:var(--muted);margin-bottom:12px;">Go to <strong>Play Match</strong> → <strong>▶ Kick Off!</strong> to play vs the AI.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="background:var(--card2);border-radius:8px;padding:12px 20px;text-align:center;flex:1;min-width:100px;">
+          <div style="font-size:1.5rem;">🏆</div>
+          <div style="font-weight:700;color:#22c55e;">Win</div>
+          <div style="color:var(--gold);font-weight:900;">+200 coins</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px 20px;text-align:center;flex:1;min-width:100px;">
+          <div style="font-size:1.5rem;">🤝</div>
+          <div style="font-weight:700;color:var(--muted);">Draw</div>
+          <div style="color:var(--gold);font-weight:900;">+75 coins</div>
+        </div>
+        <div style="background:var(--card2);border-radius:8px;padding:12px 20px;text-align:center;flex:1;min-width:100px;">
+          <div style="font-size:1.5rem;">😞</div>
+          <div style="font-weight:700;color:var(--danger);">Loss</div>
+          <div style="color:var(--gold);font-weight:900;">+25 coins</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Step 7 — Climb the Leaderboard</h2>
+      <p style="color:var(--muted);">Check <strong>Leaderboard</strong> to see where you rank. Points: <strong style="color:#22c55e;">Win = 3 pts</strong>, <strong style="color:var(--muted);">Draw = 1 pt</strong>, Loss = 0 pts. Ties are broken by total goals scored.</p>
+    </div>
+
+    <div class="card" style="border:1px solid var(--gold);">
+      <h2 style="color:var(--gold);">🔁 The Game Loop</h2>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.9rem;font-weight:600;">
+        <span style="background:var(--green-dark);padding:4px 12px;border-radius:20px;">Register</span>
+        <span style="color:var(--muted);">→</span>
+        <span style="background:var(--green-dark);padding:4px 12px;border-radius:20px;">Buy Coins</span>
+        <span style="color:var(--muted);">→</span>
+        <span style="background:var(--green-dark);padding:4px 12px;border-radius:20px;">Open Packs</span>
+        <span style="color:var(--muted);">→</span>
+        <span style="background:var(--green-dark);padding:4px 12px;border-radius:20px;">Build Squad</span>
+        <span style="color:var(--muted);">→</span>
+        <span style="background:var(--green-dark);padding:4px 12px;border-radius:20px;">Play Matches</span>
+        <span style="color:var(--muted);">→</span>
+        <span style="color:var(--gold);font-weight:900;">Earn Coins &amp; Repeat!</span>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 </main>
