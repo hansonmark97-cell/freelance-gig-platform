@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚽ Soccer Manager</title>
+<style>
+  :root {
+    --green:#1a7a3c; --green-dark:#145e2d; --green-light:#d4edda;
+    --gold:#f5c518; --gold-dark:#c9a000;
+    --bg:#0d1b2a; --card:#1a2e42; --card2:#1f3a52;
+    --text:#e8f4e8; --muted:#8aabb0; --danger:#e74c3c;
+    --legendary:#ff8c00; --epic:#a855f7; --rare:#3b82f6; --common:#6b7280;
+    --radius:12px; --shadow:0 4px 20px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+  
+  /* ── Nav ── */
+  nav{background:var(--green-dark);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.5);}
+  nav .logo{font-size:1.6rem;font-weight:900;color:var(--gold);letter-spacing:-1px;margin-right:auto;}
+  nav button{background:transparent;border:2px solid var(--gold);color:var(--gold);padding:7px 16px;border-radius:20px;cursor:pointer;font-weight:600;transition:.2s;}
+  nav button:hover,nav button.active{background:var(--gold);color:#000;}
+  .coin-badge{background:var(--gold);color:#000;border-radius:20px;padding:4px 14px;font-weight:700;font-size:.9rem;}
+
+  /* ── Layout ── */
+  main{max-width:1100px;margin:0 auto;padding:24px 16px;}
+  .page{display:none;} .page.active{display:block;}
+  h1{font-size:1.8rem;margin-bottom:18px;color:var(--gold);}
+  h2{font-size:1.3rem;margin-bottom:12px;color:var(--text);}
+  p.sub{color:var(--muted);margin-bottom:20px;font-size:.95rem;}
+
+  /* ── Cards ── */
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+
+  /* ── Player card ── */
+  .player-card{background:var(--card2);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;border:2px solid transparent;transition:.2s;}
+  .player-card.legendary{border-color:var(--legendary);background:linear-gradient(135deg,#1f3a52,#3d2000);}
+  .player-card.epic     {border-color:var(--epic);background:linear-gradient(135deg,#1f3a52,#2d1060);}
+  .player-card.rare     {border-color:var(--rare);background:linear-gradient(135deg,#1f3a52,#0a2a6e);}
+  .player-card .rating{font-size:2rem;font-weight:900;color:var(--gold);}
+  .player-card .name{font-weight:700;font-size:1rem;margin:4px 0;}
+  .player-card .pos{font-size:.75rem;background:var(--green);padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:8px;}
+  .player-card .stats{font-size:.8rem;color:var(--muted);display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+  .player-card .rarity-badge{position:absolute;top:10px;right:10px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;}
+  .rarity-badge.legendary{background:var(--legendary);color:#000;}
+  .rarity-badge.epic     {background:var(--epic);color:#fff;}
+  .rarity-badge.rare     {background:var(--rare);color:#fff;}
+  .rarity-badge.common   {background:var(--common);color:#fff;}
+
+  /* ── Coin pack cards ── */
+  .pack-card{background:var(--card2);border-radius:var(--radius);padding:20px;text-align:center;border:2px solid var(--card2);transition:.2s;cursor:pointer;}
+  .pack-card:hover{border-color:var(--gold);transform:translateY(-4px);}
+  .pack-card .pack-coins{font-size:2.2rem;font-weight:900;color:var(--gold);}
+  .pack-card .pack-name{font-weight:700;font-size:1rem;margin:6px 0;}
+  .pack-card .pack-price{font-size:1.4rem;font-weight:700;color:var(--green-light);margin:8px 0;}
+  .pack-card .pack-bonus{font-size:.8rem;color:#48bb78;font-weight:600;}
+  .pack-card .btn-buy{width:100%;padding:10px;border-radius:8px;border:none;background:var(--gold);color:#000;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:10px;transition:.2s;}
+  .pack-card .btn-buy:hover{background:var(--gold-dark);}
+
+  /* ── Match sim ── */
+  .match-display{background:var(--card2);border-radius:var(--radius);padding:30px;text-align:center;margin-bottom:20px;}
+  .match-score{font-size:4rem;font-weight:900;letter-spacing:8px;color:var(--gold);}
+  .match-teams{display:flex;justify-content:space-around;margin-bottom:10px;font-size:1.1rem;font-weight:600;}
+  .match-result{font-size:1.2rem;font-weight:700;margin:10px 0;padding:6px 20px;border-radius:20px;display:inline-block;}
+  .match-result.win  {background:#22c55e;color:#000;}
+  .match-result.lose {background:var(--danger);color:#fff;}
+  .match-result.draw {background:var(--muted);color:#000;}
+  .coins-earned{color:var(--gold);font-size:1rem;margin-top:8px;}
+
+  /* ── Leaderboard ── */
+  table{width:100%;border-collapse:collapse;font-size:.9rem;}
+  th{background:var(--green-dark);padding:10px 12px;text-align:left;font-weight:600;}
+  td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
+  tr:hover td{background:rgba(255,255,255,.04);}
+  .rank-1 td:first-child{color:var(--gold);font-weight:900;}
+  .rank-2 td:first-child{color:#c0c0c0;font-weight:700;}
+  .rank-3 td:first-child{color:#cd7f32;font-weight:700;}
+
+  /* ── Forms ── */
+  .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  input,select{background:var(--card2);border:1px solid #2d4a60;border-radius:8px;padding:10px 14px;color:var(--text);font-size:.95rem;flex:1;min-width:180px;}
+  input::placeholder{color:var(--muted);}
+  input:focus,select:focus{outline:2px solid var(--green);border-color:var(--green);}
+  .btn{padding:10px 22px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:.95rem;transition:.2s;}
+  .btn-primary{background:var(--green);color:#fff;} .btn-primary:hover{background:var(--green-dark);}
+  .btn-gold{background:var(--gold);color:#000;} .btn-gold:hover{background:var(--gold-dark);}
+  .btn-danger{background:var(--danger);color:#fff;}
+
+  /* ── Alerts ── */
+  .alert{padding:12px 16px;border-radius:8px;margin-bottom:14px;font-weight:500;}
+  .alert-success{background:#14532d;border:1px solid #22c55e;color:#86efac;}
+  .alert-error  {background:#450a0a;border:1px solid var(--danger);color:#fca5a5;}
+  .alert-info   {background:#0c2a4a;border:1px solid #3b82f6;color:#93c5fd;}
+
+  /* ── Revenue ── */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
+  .stat-box{background:var(--card2);border-radius:var(--radius);padding:18px;text-align:center;}
+  .stat-box .stat-val{font-size:2rem;font-weight:900;color:var(--gold);}
+  .stat-box .stat-lbl{font-size:.8rem;color:var(--muted);margin-top:4px;}
+
+  /* ── Squad builder ── */
+  .squad-field{background:linear-gradient(180deg,#145e2d 0%,#1a7a3c 50%,#145e2d 100%);border-radius:16px;padding:24px;margin-bottom:20px;position:relative;min-height:420px;}
+  .squad-row{display:flex;justify-content:center;gap:12px;margin-bottom:16px;}
+  .squad-slot{width:80px;text-align:center;cursor:pointer;}
+  .squad-slot .slot-circle{width:56px;height:56px;border-radius:50%;border:2px dashed rgba(255,255,255,.5);background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:.7rem;color:rgba(255,255,255,.6);transition:.2s;}
+  .squad-slot.filled .slot-circle{border-style:solid;border-color:var(--gold);background:rgba(245,197,24,.15);}
+  .squad-slot .slot-name{font-size:.65rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .squad-slot .slot-rating{font-size:.7rem;color:var(--gold);font-weight:700;}
+
+  /* ── Pack opening ── */
+  .pack-result{display:none;} .pack-result.visible{display:block;}
+  .pack-players{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px;}
+
+  /* ── Responsive ── */
+  @media(max-width:600px){
+    .match-score{font-size:2.6rem;}
+    .card-grid{grid-template-columns:1fr 1fr;}
+  }
+  .spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:8px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">⚽ Soccer Manager</span>
+  <button class="active" onclick="showPage('home')">Home</button>
+  <button onclick="showPage('squad')">My Squad</button>
+  <button onclick="showPage('match')">Play Match</button>
+  <button onclick="showPage('packs')">Open Packs</button>
+  <button onclick="showPage('store')">Coin Store</button>
+  <button onclick="showPage('leaderboard')">Leaderboard</button>
+  <button onclick="showPage('revenue')" style="border-color:#ff8c00;color:#ff8c00;">📊 Revenue</button>
+  <span class="coin-badge" id="coinBadge">🪙 —</span>
+</nav>
+
+<main>
+
+<!-- ── HOME ── -->
+<div id="page-home" class="page active">
+  <h1>⚽ Welcome to Soccer Manager</h1>
+  <p class="sub">Build your ultimate squad, open player packs, play matches, and dominate the leaderboard.</p>
+
+  <div id="home-content">
+    <div class="card" style="max-width:480px;margin-bottom:20px;">
+      <h2>Sign In / Register</h2>
+      <div id="home-alert"></div>
+      <div class="form-row">
+        <input id="reg-username" placeholder="Username" />
+        <input id="reg-email" placeholder="Email" type="email"/>
+      </div>
+      <div class="form-row">
+        <input id="reg-teamname" placeholder="Team name (optional)" />
+      </div>
+      <button class="btn btn-primary" onclick="registerManager()">Create / Load Manager</button>
+    </div>
+  </div>
+
+  <div id="home-profile" class="hidden">
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+      <div class="card" style="flex:1;min-width:260px;">
+        <h2 id="prof-team">—</h2>
+        <p style="color:var(--muted);margin-bottom:12px;" id="prof-username">@—</p>
+        <div class="stat-grid" style="margin:0;">
+          <div class="stat-box"><div class="stat-val" id="prof-wins">0</div><div class="stat-lbl">Wins</div></div>
+          <div class="stat-box"><div class="stat-val" id="prof-draws">0</div><div class="stat-lbl">Draws</div></div>
+          <div class="stat-box"><div class="stat-val" id="prof-losses">0</div><div class="stat-lbl">Losses</div></div>
+          <div class="stat-box"><div class="stat-val" id="prof-goals">0</div><div class="stat-lbl">Goals</div></div>
+        </div>
+      </div>
+      <div class="card" style="flex:1;min-width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:3.5rem;font-weight:900;color:var(--gold);" id="prof-coins">0</div>
+        <div style="color:var(--muted);margin-bottom:16px;">Coins</div>
+        <button class="btn btn-gold" onclick="showPage('store')">Buy More Coins</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="showPage('match')" style="margin-right:10px;">▶ Play a Match</button>
+    <button class="btn btn-gold" onclick="showPage('packs')">🎁 Open a Pack</button>
+  </div>
+</div>
+
+<!-- ── SQUAD ── -->
+<div id="page-squad" class="page">
+  <h1>My Squad</h1>
+  <p class="sub" id="squad-sub">Select up to 11 players for your starting lineup.</p>
+  <div id="squad-alert"></div>
+
+  <div class="squad-field" id="squad-field">
+    <!-- GK row -->
+    <div class="squad-row" id="row-gk"></div>
+    <!-- DEF row -->
+    <div class="squad-row" id="row-def"></div>
+    <!-- MID row -->
+    <div class="squad-row" id="row-mid"></div>
+    <!-- FWD row -->
+    <div class="squad-row" id="row-fwd"></div>
+  </div>
+
+  <h2>All Owned Players</h2>
+  <div class="card-grid" id="owned-players"></div>
+</div>
+
+<!-- ── MATCH ── -->
+<div id="page-match" class="page">
+  <h1>Play a Match</h1>
+  <p class="sub">Take on the AI or challenge another manager.</p>
+  <div id="match-alert"></div>
+
+  <div class="card" style="max-width:460px;margin-bottom:20px;">
+    <h2>Quick Match vs AI</h2>
+    <button class="btn btn-primary" id="btn-play-ai" onclick="playVsAI()">▶ Kick Off!</button>
+  </div>
+
+  <div id="match-result-display" class="match-display hidden">
+    <div class="match-teams">
+      <span id="match-home-team">Home</span>
+      <span style="color:var(--muted)">vs</span>
+      <span id="match-away-team">AI</span>
+    </div>
+    <div class="match-score" id="match-score">0 – 0</div>
+    <div id="match-result-badge" class="match-result">—</div>
+    <div class="coins-earned" id="match-coins-earned"></div>
+  </div>
+
+  <h2>Recent Matches</h2>
+  <div id="recent-matches"></div>
+</div>
+
+<!-- ── PACKS ── -->
+<div id="page-packs" class="page">
+  <h1>🎁 Open Player Packs</h1>
+  <p class="sub">Spend coins to open packs and discover new players for your squad.</p>
+  <div id="packs-alert"></div>
+
+  <div class="card-grid" id="pack-types"></div>
+
+  <div class="pack-result" id="pack-result">
+    <h2 style="margin-top:24px;color:var(--gold);">🎉 Pack Opened!</h2>
+    <div class="pack-players" id="pack-result-players"></div>
+  </div>
+</div>
+
+<!-- ── STORE ── -->
+<div id="page-store" class="page">
+  <h1>🪙 Coin Store</h1>
+  <p class="sub">Top up your coins to open packs, upgrade your squad, and dominate the pitch.</p>
+  <div id="store-alert"></div>
+  <div class="card-grid" id="store-packs"></div>
+</div>
+
+<!-- ── LEADERBOARD ── -->
+<div id="page-leaderboard" class="page">
+  <h1>🏆 Leaderboard</h1>
+  <p class="sub">Top managers ranked by points (win=3pts, draw=1pt).</p>
+  <div id="leaderboard-table"></div>
+</div>
+
+<!-- ── REVENUE ── -->
+<div id="page-revenue" class="page">
+  <h1>📊 Platform Revenue Dashboard</h1>
+  <p class="sub">Real-time coin sales and revenue metrics.</p>
+  <div class="stat-grid" id="rev-stats"></div>
+  <h2>Revenue by Pack</h2>
+  <div id="rev-by-pack"></div>
+  <h2 style="margin-top:20px;">Recent Purchases</h2>
+  <div id="rev-recent"></div>
+</div>
+
+</main>
+
+<script>
+'use strict';
+
+let currentManager = null;
+
+// ── Utils ────────────────────────────────────────────────────────────────────
+const api = async (method, path, body) => {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+};
+
+function alert$(id, msg, type = 'info') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { if (el) el.innerHTML = ''; }, 5000);
+}
+
+function rarityClass(r) { return r; }
+
+function playerCardHTML(p, showAdd = false) {
+  return `<div class="player-card ${rarityClass(p.rarity)}">
+    <span class="rarity-badge ${rarityClass(p.rarity)}">${p.rarity}</span>
+    <div class="rating">${p.rating}</div>
+    <div class="name">${p.name}</div>
+    <div class="pos">${p.position}</div>
+    <div class="stats">
+      <span>💨 ${p.pace}</span><span>⚽ ${p.shooting}</span>
+      <span>🎯 ${p.passing}</span><span>🛡 ${p.defending}</span>
+    </div>
+    ${showAdd ? `<button class="btn btn-primary" style="width:100%;margin-top:8px;padding:6px;" onclick="addToSquad(${p.squad_player_id || p.id})">+ Add to Squad</button>` : ''}
+  </div>`;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  [...document.querySelectorAll('nav button')].find(b => b.textContent.toLowerCase().includes(name.slice(0,4).toLowerCase()))?.classList.add('active');
+
+  if (name === 'squad')       loadSquad();
+  if (name === 'match')       loadRecentMatches();
+  if (name === 'packs')       loadPackTypes();
+  if (name === 'store')       loadStore();
+  if (name === 'leaderboard') loadLeaderboard();
+  if (name === 'revenue')     loadRevenue();
+}
+
+// ── Manager ───────────────────────────────────────────────────────────────────
+async function registerManager() {
+  const username  = document.getElementById('reg-username').value.trim();
+  const email     = document.getElementById('reg-email').value.trim();
+  const team_name = document.getElementById('reg-teamname').value.trim();
+  if (!username || !email) return alert$('home-alert', 'Username and email are required.', 'error');
+  try {
+    const manager = await api('POST', '/managers', { username, email, team_name });
+    setManager(manager);
+  } catch (e) {
+    // Try to load existing
+    try {
+      const all = await api('GET', '/managers');
+      const found = all.find(m => m.username === username);
+      if (found) { setManager(found); return; }
+    } catch {}
+    alert$('home-alert', e.message, 'error');
+  }
+}
+
+function setManager(m) {
+  currentManager = m;
+  document.getElementById('home-content').classList.add('hidden');
+  document.getElementById('home-profile').classList.remove('hidden');
+  refreshProfile();
+}
+
+function refreshProfile() {
+  if (!currentManager) return;
+  document.getElementById('prof-team').textContent    = currentManager.team_name;
+  document.getElementById('prof-username').textContent = '@' + currentManager.username;
+  document.getElementById('prof-wins').textContent    = currentManager.wins;
+  document.getElementById('prof-draws').textContent   = currentManager.draws;
+  document.getElementById('prof-losses').textContent  = currentManager.losses;
+  document.getElementById('prof-goals').textContent   = currentManager.goals_scored;
+  document.getElementById('prof-coins').textContent   = currentManager.coins.toLocaleString();
+  document.getElementById('coinBadge').textContent    = '🪙 ' + currentManager.coins.toLocaleString();
+}
+
+async function refreshManager() {
+  if (!currentManager) return;
+  currentManager = await api('GET', '/managers/' + currentManager.id);
+  refreshProfile();
+}
+
+// ── Squad ─────────────────────────────────────────────────────────────────────
+let ownedPlayers = [];
+let squadSlots = []; // { squad_player_id, position, slot }
+
+async function loadSquad() {
+  if (!currentManager) { document.getElementById('owned-players').innerHTML = '<p style="color:var(--muted)">Please sign in first.</p>'; return; }
+  ownedPlayers = await api('GET', `/managers/${currentManager.id}/squad`);
+
+  // Render field
+  renderField();
+
+  // Render collection
+  const grid = document.getElementById('owned-players');
+  if (ownedPlayers.length === 0) {
+    grid.innerHTML = '<p style="color:var(--muted)">No players yet — open some packs!</p>';
+    return;
+  }
+  grid.innerHTML = ownedPlayers.map(p => playerCardHTML(p, true)).join('');
+}
+
+function renderField() {
+  const inSquad = ownedPlayers.filter(p => p.in_squad);
+  ['gk','def','mid','fwd'].forEach(row => {
+    const pos = row === 'gk' ? 'GK' : row === 'def' ? 'DEF' : row === 'mid' ? 'MID' : 'FWD';
+    const slots = inSquad.filter(p => p.position === pos);
+    const maxSlots = pos === 'GK' ? 1 : pos === 'DEF' ? 4 : pos === 'MID' ? 4 : 3;
+    let html = '';
+    for (let i = 0; i < maxSlots; i++) {
+      const p = slots[i];
+      if (p) {
+        html += `<div class="squad-slot filled">
+          <div class="slot-circle">${p.position}</div>
+          <div class="slot-name">${p.name}</div>
+          <div class="slot-rating">${p.rating}</div>
+        </div>`;
+      } else {
+        html += `<div class="squad-slot"><div class="slot-circle">${pos}</div><div class="slot-name">Empty</div></div>`;
+      }
+    }
+    document.getElementById('row-' + row).innerHTML = html;
+  });
+}
+
+async function addToSquad(squadPlayerId) {
+  if (!currentManager) return;
+  const player = ownedPlayers.find(p => p.squad_player_id === squadPlayerId);
+  if (!player) return;
+
+  // Toggle in/out squad by rebuilding slots
+  const inSquad = ownedPlayers.filter(p => p.in_squad && p.squad_player_id !== squadPlayerId);
+  const alreadyIn = ownedPlayers.find(p => p.squad_player_id === squadPlayerId && p.in_squad);
+  
+  if (!alreadyIn) {
+    if (inSquad.length >= 11) { alert$('squad-alert', 'Squad is full (max 11). Remove a player first.', 'error'); return; }
+    inSquad.push(player);
+  }
+
+  const slots = inSquad.map((p, i) => ({ squad_player_id: p.squad_player_id, squad_slot: i + 1 }));
+  try {
+    await api('PUT', `/managers/${currentManager.id}/squad`, { slots });
+    await loadSquad();
+    alert$('squad-alert', alreadyIn ? `${player.name} removed from squad.` : `${player.name} added to squad!`, 'success');
+  } catch (e) {
+    alert$('squad-alert', e.message, 'error');
+  }
+}
+
+// ── Match ─────────────────────────────────────────────────────────────────────
+async function playVsAI() {
+  if (!currentManager) return alert$('match-alert', 'Please sign in first.', 'error');
+  const btn = document.getElementById('btn-play-ai');
+  btn.disabled = true; btn.innerHTML = 'Playing…<span class="spinner"></span>';
+  try {
+    const { match, home_manager: mgr } = await api('POST', '/matches', { home_manager_id: currentManager.id });
+    currentManager = mgr;
+    refreshProfile();
+
+    const result = match.result;
+    const isWin  = result === 'home_win';
+    const isDraw = result === 'draw';
+
+    document.getElementById('match-home-team').textContent = currentManager.team_name;
+    document.getElementById('match-away-team').textContent = 'AI FC';
+    document.getElementById('match-score').textContent     = `${match.home_goals} – ${match.away_goals}`;
+    const badge = document.getElementById('match-result-badge');
+    badge.textContent  = isWin ? '🏆 Victory!' : isDraw ? '🤝 Draw' : '😞 Defeat';
+    badge.className    = 'match-result ' + (isWin ? 'win' : isDraw ? 'draw' : 'lose');
+    document.getElementById('match-coins-earned').textContent = `+${match.coins_earned} coins earned`;
+    document.getElementById('match-result-display').classList.remove('hidden');
+
+    await loadRecentMatches();
+  } catch (e) {
+    alert$('match-alert', e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '▶ Kick Off!';
+  }
+}
+
+async function loadRecentMatches() {
+  const matches = await api('GET', '/matches' + (currentManager ? `?manager_id=${currentManager.id}` : ''));
+  const el = document.getElementById('recent-matches');
+  if (matches.length === 0) { el.innerHTML = '<p style="color:var(--muted)">No matches played yet.</p>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Home</th><th>Score</th><th>Away</th><th>Rating</th><th>Coins</th><th>Date</th></tr></thead><tbody>
+    ${matches.map(m => `<tr>
+      <td>${m.home_team || m.home_username}</td>
+      <td style="font-weight:700;color:var(--gold)">${m.home_goals}–${m.away_goals}</td>
+      <td>${m.away_team || m.away_username || 'AI FC'}</td>
+      <td style="color:var(--muted);font-size:.8rem">${(m.home_rating||0).toFixed(1)} v ${(m.away_rating||0).toFixed(1)}</td>
+      <td style="color:#22c55e">+${m.coins_earned}</td>
+      <td style="color:var(--muted);font-size:.8rem">${m.played_at?.slice(0,10) || ''}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── Packs ─────────────────────────────────────────────────────────────────────
+async function loadPackTypes() {
+  const types = await api('GET', '/packs/types');
+  const grid = document.getElementById('pack-types');
+  grid.innerHTML = types.map(t => `
+    <div class="pack-card" onclick="openPack('${t.type}')">
+      <div class="pack-coins">🎁 ${t.players}</div>
+      <div class="pack-name">${t.type.charAt(0).toUpperCase() + t.type.slice(1)} Pack</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;">
+        ⭐ Leg ${t.rarity_odds.legendary}% · Epic ${t.rarity_odds.epic}% · Rare ${t.rarity_odds.rare}%
+      </div>
+      <div class="pack-price">🪙 ${t.cost_coins.toLocaleString()}</div>
+      <button class="btn-buy">Open Pack</button>
+    </div>
+  `).join('');
+}
+
+async function openPack(packType) {
+  if (!currentManager) return alert$('packs-alert', 'Please sign in first.', 'error');
+  try {
+    const { players_drawn, manager } = await api('POST', '/packs/open', { manager_id: currentManager.id, pack_type: packType });
+    currentManager = manager;
+    refreshProfile();
+
+    document.getElementById('pack-result').classList.add('visible');
+    document.getElementById('pack-result-players').innerHTML = players_drawn.map(p => playerCardHTML(p)).join('');
+    alert$('packs-alert', `Opened a ${packType} pack! Got ${players_drawn.length} players.`, 'success');
+  } catch (e) {
+    alert$('packs-alert', e.message + (e.message.includes('insufficient') ? ' — <a href="#" onclick="showPage(\'store\');return false;">Buy coins!</a>' : ''), 'error');
+  }
+}
+
+// ── Store ─────────────────────────────────────────────────────────────────────
+async function loadStore() {
+  const packs = await api('GET', '/store/packs');
+  const grid = document.getElementById('store-packs');
+  grid.innerHTML = packs.map(p => {
+    const totalCoins = Math.round(p.coins * (1 + p.bonus_pct / 100));
+    return `<div class="pack-card">
+      <div class="pack-coins">🪙 ${totalCoins.toLocaleString()}</div>
+      <div class="pack-name">${p.name}</div>
+      ${p.bonus_pct > 0 ? `<div class="pack-bonus">+${p.bonus_pct}% bonus coins!</div>` : ''}
+      <div class="pack-price">$${p.price_usd.toFixed(2)}</div>
+      <button class="btn-buy" onclick="buyCoinPack(${p.id},'${p.name}')">Buy Now</button>
+    </div>`;
+  }).join('');
+}
+
+async function buyCoinPack(packId, packName) {
+  if (!currentManager) return alert$('store-alert', 'Please sign in first.', 'error');
+  try {
+    const { purchase, manager } = await api('POST', '/store/purchase', { manager_id: currentManager.id, coin_pack_id: packId });
+    currentManager = manager;
+    refreshProfile();
+    alert$('store-alert', `✅ Purchased "${packName}"! +${purchase.coins_awarded.toLocaleString()} coins added.`, 'success');
+    loadStore();
+  } catch (e) {
+    alert$('store-alert', e.message, 'error');
+  }
+}
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+async function loadLeaderboard() {
+  const rows = await api('GET', '/leaderboard?limit=20');
+  const el = document.getElementById('leaderboard-table');
+  if (rows.length === 0) { el.innerHTML = '<p style="color:var(--muted)">No managers yet.</p>'; return; }
+  el.innerHTML = `<table><thead><tr><th>#</th><th>Manager</th><th>Team</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>Goals</th></tr></thead>
+  <tbody>${rows.map((r, i) => `
+    <tr class="rank-${i+1}">
+      <td>${i+1}</td>
+      <td>${r.username}</td>
+      <td>${r.team_name}</td>
+      <td style="font-weight:700;color:var(--gold)">${r.points}</td>
+      <td>${r.wins}</td><td>${r.draws}</td><td>${r.losses}</td>
+      <td>${r.goals_scored}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── Revenue ───────────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  const data = await api('GET', '/store/revenue');
+  const { totals, byPack, recentPurchases } = data;
+
+  document.getElementById('rev-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-val">$${(totals.total_revenue_usd||0).toFixed(2)}</div><div class="stat-lbl">Total Revenue</div></div>
+    <div class="stat-box"><div class="stat-val">${(totals.total_purchases||0)}</div><div class="stat-lbl">Purchases</div></div>
+    <div class="stat-box"><div class="stat-val">${((totals.total_coins_sold)||0).toLocaleString()}</div><div class="stat-lbl">Coins Sold</div></div>
+    <div class="stat-box"><div class="stat-val">$${(totals.avg_purchase_usd||0).toFixed(2)}</div><div class="stat-lbl">Avg Purchase</div></div>
+  `;
+
+  document.getElementById('rev-by-pack').innerHTML = byPack.length === 0
+    ? '<p style="color:var(--muted)">No purchases yet.</p>'
+    : `<table><thead><tr><th>Pack</th><th>Price</th><th>Sales</th><th>Revenue</th></tr></thead>
+    <tbody>${byPack.map(b => `<tr>
+      <td>${b.name}</td>
+      <td>$${b.pack_price.toFixed(2)}</td>
+      <td>${b.times_purchased}</td>
+      <td style="color:var(--gold);font-weight:700;">$${(b.revenue_usd||0).toFixed(2)}</td>
+    </tr>`).join('')}</tbody></table>`;
+
+  document.getElementById('rev-recent').innerHTML = recentPurchases.length === 0
+    ? '<p style="color:var(--muted)">No purchases yet.</p>'
+    : `<table><thead><tr><th>Manager</th><th>Pack</th><th>Coins</th><th>Revenue</th><th>Date</th></tr></thead>
+    <tbody>${recentPurchases.map(p => `<tr>
+      <td>${p.username} (${p.team_name})</td>
+      <td>${p.pack_name}</td>
+      <td>${p.coins_awarded.toLocaleString()}</td>
+      <td style="color:var(--gold);">$${p.price_usd.toFixed(2)}</td>
+      <td style="color:var(--muted);font-size:.8rem">${p.created_at?.slice(0,10)||''}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+</script>
+</body>
+</html>
