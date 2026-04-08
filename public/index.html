@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreelanceHub — Find Talent, Find Work</title>
+
+  <!-- Firebase Web SDK (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+  <!-- Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #4f46e5;
+      --brand-light: #6366f1;
+      --brand-dark: #3730a3;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Nav ── */
+    header { background: var(--surface); border-bottom: 1px solid var(--border);
+             position: sticky; top: 0; z-index: 100; }
+    nav { max-width: 1100px; margin: 0 auto; display: flex; align-items: center;
+          justify-content: space-between; padding: 0 1rem; height: 60px; }
+    .logo { font-weight: 700; font-size: 1.2rem; color: var(--brand); text-decoration: none; }
+    .nav-links { display: flex; gap: .25rem; }
+    .nav-btn { padding: .45rem .9rem; border-radius: var(--radius); border: none;
+               background: transparent; cursor: pointer; font-size: .875rem;
+               color: var(--text); transition: background .15s; }
+    .nav-btn:hover { background: var(--bg); }
+    .nav-btn.active { background: var(--brand); color: #fff; }
+    #auth-btn { margin-left: .5rem; background: var(--brand); color: #fff;
+                padding: .45rem 1rem; border-radius: var(--radius); border: none;
+                cursor: pointer; font-size: .875rem; transition: background .15s; }
+    #auth-btn:hover { background: var(--brand-dark); }
+    #user-email { font-size: .8rem; color: var(--muted); margin-right: .5rem; }
+
+    /* ── Layout ── */
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    h2 { font-size: 1.5rem; margin-bottom: 1.25rem; color: var(--brand-dark); }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                 gap: 1rem; }
+    .card { background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow);
+            display: flex; flex-direction: column; gap: .5rem; }
+    .card h3 { font-size: 1rem; }
+    .card .meta { font-size: .8rem; color: var(--muted); }
+    .badge { display: inline-block; padding: .2rem .5rem; border-radius: 999px;
+             font-size: .7rem; font-weight: 600; text-transform: uppercase; }
+    .badge-active   { background: #dcfce7; color: #166534; }
+    .badge-open     { background: #dbeafe; color: #1e40af; }
+    .badge-pending  { background: #fef9c3; color: #854d0e; }
+    .badge-accepted { background: #dcfce7; color: #166534; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; }
+
+    /* ── Forms ── */
+    .form-card { background: var(--surface); border: 1px solid var(--border);
+                 border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow);
+                 max-width: 540px; margin-bottom: 2rem; }
+    .form-card h3 { margin-bottom: 1rem; font-size: 1.1rem; }
+    .form-row { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+    label { font-size: .85rem; font-weight: 600; color: var(--muted); }
+    input, select, textarea {
+      padding: .55rem .75rem; border: 1px solid var(--border); border-radius: var(--radius);
+      font-size: .9rem; width: 100%; transition: border-color .15s; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--brand-light);
+      box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    button[type=submit] {
+      background: var(--brand); color: #fff; border: none; border-radius: var(--radius);
+      padding: .6rem 1.4rem; font-size: .9rem; cursor: pointer; transition: background .15s;
+    }
+    button[type=submit]:hover { background: var(--brand-dark); }
+
+    /* ── Payment ── */
+    #card-element { padding: .6rem .75rem; border: 1px solid var(--border);
+                    border-radius: var(--radius); background: var(--surface); }
+    #payment-message { margin-top: .75rem; font-size: .875rem; }
+    .text-success { color: var(--success); }
+    .text-danger  { color: var(--danger); }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--text);
+             color: #fff; padding: .75rem 1.25rem; border-radius: var(--radius);
+             font-size: .875rem; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#" class="logo">FreelanceHub</a>
+    <div class="nav-links">
+      <button class="nav-btn active" data-section="gigs">Gigs</button>
+      <button class="nav-btn" data-section="jobs">Jobs</button>
+      <button class="nav-btn" data-section="bids">My Bids</button>
+      <button class="nav-btn" data-section="post-gig">Post Gig</button>
+      <button class="nav-btn" data-section="post-job">Post Job</button>
+      <button class="nav-btn" data-section="payments">Payments</button>
+    </div>
+    <div style="display:flex;align-items:center">
+      <span id="user-email"></span>
+      <button id="auth-btn">Sign In with Google</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <!-- Gigs -->
+  <section id="section-gigs" class="section visible">
+    <h2>Available Gigs</h2>
+    <div id="gigs-list" class="card-grid"><p style="color:var(--muted)">Loading…</p></div>
+  </section>
+
+  <!-- Jobs -->
+  <section id="section-jobs" class="section">
+    <h2>Open Jobs</h2>
+    <div id="jobs-list" class="card-grid"><p style="color:var(--muted)">Loading…</p></div>
+  </section>
+
+  <!-- My Bids -->
+  <section id="section-bids" class="section">
+    <h2>My Bids</h2>
+    <div id="bids-list" class="card-grid"><p style="color:var(--muted)">Sign in to view your bids.</p></div>
+  </section>
+
+  <!-- Post a Gig -->
+  <section id="section-post-gig" class="section">
+    <div class="form-card">
+      <h3>Post a New Gig</h3>
+      <form id="gig-form">
+        <div class="form-row">
+          <label for="gig-title">Title</label>
+          <input id="gig-title" placeholder="I will build a REST API…" required />
+        </div>
+        <div class="form-row">
+          <label for="gig-desc">Description</label>
+          <textarea id="gig-desc" placeholder="Describe what you offer…" required></textarea>
+        </div>
+        <div class="form-row">
+          <label for="gig-price">Price (USD)</label>
+          <input id="gig-price" type="number" min="1" placeholder="150" required />
+        </div>
+        <div class="form-row">
+          <label for="gig-category">Category</label>
+          <select id="gig-category">
+            <option value="backend">Backend</option>
+            <option value="frontend">Frontend</option>
+            <option value="design">Design</option>
+            <option value="mobile">Mobile</option>
+            <option value="data-science">Data Science</option>
+            <option value="devops">DevOps</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="gig-days">Delivery Days</label>
+          <input id="gig-days" type="number" min="1" placeholder="5" required />
+        </div>
+        <button type="submit">Post Gig</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Post a Job -->
+  <section id="section-post-job" class="section">
+    <div class="form-card">
+      <h3>Post a New Job</h3>
+      <form id="job-form">
+        <div class="form-row">
+          <label for="job-title">Title</label>
+          <input id="job-title" placeholder="Build an e-commerce site…" required />
+        </div>
+        <div class="form-row">
+          <label for="job-desc">Description</label>
+          <textarea id="job-desc" placeholder="Describe the project…" required></textarea>
+        </div>
+        <div class="form-row">
+          <label for="job-budget">Budget (USD)</label>
+          <input id="job-budget" type="number" min="1" placeholder="3000" required />
+        </div>
+        <div class="form-row">
+          <label for="job-category">Category</label>
+          <select id="job-category">
+            <option value="web-development">Web Development</option>
+            <option value="mobile">Mobile</option>
+            <option value="design">Design</option>
+            <option value="data-science">Data Science</option>
+            <option value="devops">DevOps</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="job-deadline">Deadline</label>
+          <input id="job-deadline" type="date" required />
+        </div>
+        <button type="submit">Post Job</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Payments -->
+  <section id="section-payments" class="section">
+    <div class="form-card">
+      <h3>Pay for a Service</h3>
+      <form id="payment-form">
+        <div class="form-row">
+          <label for="pay-amount">Amount (USD)</label>
+          <input id="pay-amount" type="number" min="1" placeholder="50" required />
+        </div>
+        <div class="form-row">
+          <label>Card Details</label>
+          <div id="card-element"></div>
+        </div>
+        <button type="submit" id="pay-btn">Pay Now</button>
+      </form>
+      <p id="payment-message"></p>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+  // ── Firebase config ────────────────────────────────────────────────────────
+  // Replace these values with your own Firebase project credentials.
+  const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId:             "YOUR_APP_ID",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth      = firebase.auth();
+  const functions = firebase.functions();
+
+  // ── Stripe config ──────────────────────────────────────────────────────────
+  // Replace with your Stripe publishable key.
+  const stripe      = Stripe('pk_test_YOUR_STRIPE_PUBLISHABLE_KEY');
+  const elements    = stripe.elements();
+  const cardElement = elements.create('card');
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const API = (path, opts = {}) =>
+    fetch(`/api${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    }).then((r) => r.json());
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function badgeClass(status) {
+    return 'badge badge-' + (status || 'active');
+  }
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  let currentSection = 'gigs';
+  document.querySelectorAll('.nav-btn[data-section]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.section').forEach((s) => s.classList.remove('visible'));
+      document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+      const id = btn.dataset.section;
+      document.getElementById('section-' + id).classList.add('visible');
+      btn.classList.add('active');
+      currentSection = id;
+      if (id === 'gigs')     loadGigs();
+      if (id === 'jobs')     loadJobs();
+      if (id === 'bids')     loadBids();
+      if (id === 'payments') mountCard();
+    });
+  });
+
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  const authBtn    = document.getElementById('auth-btn');
+  const userEmail  = document.getElementById('user-email');
+  let currentUser  = null;
+
+  auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    if (user) {
+      userEmail.textContent = user.email;
+      authBtn.textContent   = 'Sign Out';
+    } else {
+      userEmail.textContent = '';
+      authBtn.textContent   = 'Sign In with Google';
+    }
+  });
+
+  authBtn.addEventListener('click', () => {
+    if (currentUser) {
+      auth.signOut();
+    } else {
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(console.error);
+    }
+  });
+
+  // ── Gigs ───────────────────────────────────────────────────────────────────
+  async function loadGigs() {
+    const list  = document.getElementById('gigs-list');
+    list.innerHTML = '<p style="color:var(--muted)">Loading…</p>';
+    const gigs  = await API('/gigs');
+    if (!gigs.length) { list.innerHTML = '<p>No gigs yet.</p>'; return; }
+    list.innerHTML = gigs.map((g) => `
+      <div class="card">
+        <h3>${escHtml(g.title)}</h3>
+        <p class="meta">${escHtml(g.category)} · $${g.price} · ${g.deliveryDays}d delivery</p>
+        <p style="font-size:.85rem">${escHtml(g.description)}</p>
+        <span class="${badgeClass(g.status)}">${g.status}</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('gig-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) { toast('Please sign in first.'); return; }
+    const payload = {
+      title:        document.getElementById('gig-title').value,
+      description:  document.getElementById('gig-desc').value,
+      price:        Number(document.getElementById('gig-price').value),
+      category:     document.getElementById('gig-category').value,
+      deliveryDays: Number(document.getElementById('gig-days').value),
+      freelancerId: currentUser.uid,
+    };
+    const res = await API('/gigs', { method: 'POST', body: payload });
+    if (res.id) { toast('Gig posted!'); e.target.reset(); } else { toast(res.error || 'Error'); }
+  });
+
+  // ── Jobs ───────────────────────────────────────────────────────────────────
+  async function loadJobs() {
+    const list = document.getElementById('jobs-list');
+    list.innerHTML = '<p style="color:var(--muted)">Loading…</p>';
+    const jobs = await API('/jobs');
+    if (!jobs.length) { list.innerHTML = '<p>No jobs yet.</p>'; return; }
+    list.innerHTML = jobs.map((j) => `
+      <div class="card">
+        <h3>${escHtml(j.title)}</h3>
+        <p class="meta">${escHtml(j.category)} · Budget: $${j.budget} · Due: ${j.deadline}</p>
+        <p style="font-size:.85rem">${escHtml(j.description)}</p>
+        <span class="${badgeClass(j.status)}">${j.status}</span>
+        <button onclick="bidOnJob('${j.id}')"
+                style="margin-top:.5rem;padding:.35rem .8rem;background:var(--brand);
+                       color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.8rem">
+          Place Bid
+        </button>
+      </div>`).join('');
+  }
+
+  async function bidOnJob(jobId) {
+    if (!currentUser) { toast('Please sign in first.'); return; }
+    const amount      = Number(prompt('Your bid amount (USD):'));
+    const message     = prompt('Bid message:');
+    const deliveryDays = Number(prompt('Delivery days:'));
+    if (!amount || !message || !deliveryDays) { toast('Bid cancelled.'); return; }
+    const res = await API('/bids', {
+      method: 'POST',
+      body: { jobId, freelancerId: currentUser.uid, amount, message, deliveryDays },
+    });
+    if (res.id) toast('Bid placed!'); else toast(res.error || 'Error');
+  }
+
+  document.getElementById('job-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) { toast('Please sign in first.'); return; }
+    const payload = {
+      title:       document.getElementById('job-title').value,
+      description: document.getElementById('job-desc').value,
+      budget:      Number(document.getElementById('job-budget').value),
+      category:    document.getElementById('job-category').value,
+      deadline:    document.getElementById('job-deadline').value,
+      clientId:    currentUser.uid,
+    };
+    const res = await API('/jobs', { method: 'POST', body: payload });
+    if (res.id) { toast('Job posted!'); e.target.reset(); } else { toast(res.error || 'Error'); }
+  });
+
+  // ── Bids ───────────────────────────────────────────────────────────────────
+  async function loadBids() {
+    const list = document.getElementById('bids-list');
+    if (!currentUser) { list.innerHTML = '<p>Sign in to view your bids.</p>'; return; }
+    list.innerHTML = '<p style="color:var(--muted)">Loading…</p>';
+    const bids = await API(`/bids?freelancerId=${currentUser.uid}`);
+    if (!bids.length) { list.innerHTML = '<p>No bids yet.</p>'; return; }
+    list.innerHTML = bids.map((b) => `
+      <div class="card">
+        <h3>Bid on job ${b.jobId}</h3>
+        <p class="meta">$${b.amount} · ${b.deliveryDays}d delivery</p>
+        <p style="font-size:.85rem">${escHtml(b.message)}</p>
+        <span class="${badgeClass(b.status)}">${b.status}</span>
+      </div>`).join('');
+  }
+
+  // ── Payments ───────────────────────────────────────────────────────────────
+  let cardMounted = false;
+  function mountCard() {
+    if (!cardMounted) { cardElement.mount('#card-element'); cardMounted = true; }
+  }
+
+  document.getElementById('payment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msgEl  = document.getElementById('payment-message');
+    const payBtn = document.getElementById('pay-btn');
+    payBtn.disabled = true;
+    msgEl.textContent = '';
+
+    const amountDollars = Number(document.getElementById('pay-amount').value);
+    if (!amountDollars || amountDollars <= 0) {
+      msgEl.textContent = 'Please enter a valid amount.';
+      msgEl.className = 'text-danger';
+      payBtn.disabled = false;
+      return;
+    }
+
+    try {
+      // Call the Firebase Callable Cloud Function to get a clientSecret
+      const createIntent = functions.httpsCallable('createPaymentIntent');
+      const { data }     = await createIntent({ amount: amountDollars * 100 });
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: { card: cardElement },
+      });
+
+      if (error) {
+        msgEl.textContent = error.message;
+        msgEl.className   = 'text-danger';
+      } else if (paymentIntent.status === 'succeeded') {
+        msgEl.textContent = '✓ Payment successful!';
+        msgEl.className   = 'text-success';
+        e.target.reset();
+        cardElement.clear();
+      }
+    } catch (err) {
+      msgEl.textContent = err.message || 'Payment failed.';
+      msgEl.className   = 'text-danger';
+    } finally {
+      payBtn.disabled = false;
+    }
+  });
+
+  // ── XSS guard ──────────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  loadGigs();
+</script>
+</body>
+</html>
