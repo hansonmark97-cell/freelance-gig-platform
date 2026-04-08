@@ -5,25 +5,29 @@ const db = require('../database');
 const router = express.Router();
 
 // POST /api/users/login - must be before /:id
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'email and password are required' });
+router.post('/login', async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'email and password are required' });
+    }
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    const { password_hash, ...safeUser } = user;
+    res.json(safeUser);
+  } catch (err) {
+    next(err);
   }
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-  if (!user) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
-  const valid = bcrypt.compareSync(password, user.password_hash);
-  if (!valid) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
-  const { password_hash, ...safeUser } = user;
-  res.json(safeUser);
 });
 
 // POST /api/users
-router.post('/', (req, res) => {
+router.post('/', async (req, res, next) => {
   const { username, email, password, role, bio, hourly_rate } = req.body;
   if (!username || !email || !password || !role) {
     return res.status(400).json({ error: 'username, email, password, and role are required' });
@@ -32,7 +36,7 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'role must be freelancer or client' });
   }
   try {
-    const password_hash = bcrypt.hashSync(password, 10);
+    const password_hash = await bcrypt.hash(password, 10);
     const stmt = db.prepare(
       'INSERT INTO users (username, email, password_hash, role, bio, hourly_rate) VALUES (?, ?, ?, ?, ?, ?)'
     );
@@ -43,7 +47,7 @@ router.post('/', (req, res) => {
     if (err.message && err.message.includes('UNIQUE constraint failed')) {
       return res.status(409).json({ error: 'Username or email already exists' });
     }
-    throw err;
+    next(err);
   }
 });
 

@@ -54,11 +54,11 @@
 <body>
   <header><h1>🚀 Freelance Gig Platform</h1></header>
   <nav>
-    <button class="active" onclick="showTab('users')">Users</button>
-    <button onclick="showTab('gigs')">Gigs</button>
-    <button onclick="showTab('jobs')">Jobs</button>
-    <button onclick="showTab('bids')">Bids</button>
-    <button onclick="showTab('reviews')">Reviews</button>
+    <button class="active" onclick="showTab('users', this)">Users</button>
+    <button onclick="showTab('gigs', this)">Gigs</button>
+    <button onclick="showTab('jobs', this)">Jobs</button>
+    <button onclick="showTab('bids', this)">Bids</button>
+    <button onclick="showTab('reviews', this)">Reviews</button>
   </nav>
   <main>
     <!-- USERS TAB -->
@@ -178,11 +178,11 @@
   </main>
 
   <script>
-    function showTab(name, event) {
+    function showTab(name, btn) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       document.getElementById('tab-' + name).classList.add('active');
-      event.target.classList.add('active');
+      btn.classList.add('active');
       loadList(name);
     }
 

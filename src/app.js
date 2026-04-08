@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const usersRouter = require('./routes/users');
 const gigsRouter = require('./routes/gigs');
@@ -9,8 +10,16 @@ const reviewsRouter = require('./routes/reviews');
 
 const app = express();
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/api/', limiter);
 
 app.use('/api/users', usersRouter);
 app.use('/api/gigs', gigsRouter);
