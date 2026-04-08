@@ -112,4 +112,9 @@ describe('Jobs API', () => {
     const get = await request(app).get(`/api/jobs/${created.body.id}`);
     expect(get.status).toBe(404);
   });
+
+  test('DELETE /api/jobs/:id - returns 404 for unknown id', async () => {
+    const res = await request(app).delete('/api/jobs/nonexistent-id');
+    expect(res.status).toBe(404);
+  });
 });
