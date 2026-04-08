@@ -6,7 +6,7 @@ const router = express.Router();
 // POST /api/bids
 router.post('/', (req, res) => {
   const { amount, proposal, freelancer_id, gig_id, job_id } = req.body;
-  if (!amount || !proposal || !freelancer_id || (!gig_id && !job_id)) {
+  if (amount === undefined || amount === null || !proposal || !freelancer_id || (!gig_id && !job_id)) {
     return res.status(400).json({ error: 'amount, proposal, freelancer_id, and either gig_id or job_id are required' });
   }
   try {

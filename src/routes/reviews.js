@@ -54,6 +54,10 @@ router.put('/:id', (req, res) => {
   const rating = req.body.rating !== undefined ? req.body.rating : existing.rating;
   const comment = req.body.comment !== undefined ? req.body.comment : existing.comment;
 
+  if (rating < 1 || rating > 5 || !Number.isInteger(Number(rating))) {
+    return res.status(400).json({ error: 'rating must be an integer between 1 and 5' });
+  }
+
   db.prepare('UPDATE reviews SET rating = ?, comment = ? WHERE id = ?').run(rating, comment, req.params.id);
   const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(req.params.id);
   res.json(review);
