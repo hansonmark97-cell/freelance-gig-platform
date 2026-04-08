@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freelance Gig Platform</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; }
+    header { background: #2563eb; color: white; padding: 1rem 2rem; }
+    header h1 { font-size: 1.5rem; }
+    nav { display: flex; gap: 0; background: #1d4ed8; }
+    nav button {
+      background: none; border: none; color: #93c5fd; padding: 0.75rem 1.5rem;
+      cursor: pointer; font-size: 0.95rem; transition: background 0.2s;
+    }
+    nav button:hover, nav button.active { background: #2563eb; color: white; }
+    main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    h2 { margin-bottom: 1rem; color: #1e40af; }
+    .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card h3 { margin-bottom: 0.5rem; color: #1e40af; }
+    .card p { color: #555; font-size: 0.9rem; margin: 0.2rem 0; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: bold; }
+    .badge-open { background: #d1fae5; color: #065f46; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-accepted { background: #d1fae5; color: #065f46; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; }
+    form { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    form h3 { margin-bottom: 1rem; color: #374151; }
+    .form-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .form-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+    label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: #374151; }
+    input, select, textarea {
+      padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px;
+      font-size: 0.9rem; transition: border 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; }
+    textarea { resize: vertical; min-height: 80px; }
+    button[type="submit"] {
+      background: #2563eb; color: white; border: none; padding: 0.6rem 1.5rem;
+      border-radius: 6px; cursor: pointer; font-size: 0.95rem; margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #1d4ed8; }
+    .msg { padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+    .msg-success { background: #d1fae5; color: #065f46; }
+    .msg-error { background: #fee2e2; color: #991b1b; }
+    #list-section { margin-bottom: 2rem; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body>
+  <header><h1>🚀 Freelance Gig Platform</h1></header>
+  <nav>
+    <button class="active" onclick="showTab('users')">Users</button>
+    <button onclick="showTab('gigs')">Gigs</button>
+    <button onclick="showTab('jobs')">Jobs</button>
+    <button onclick="showTab('bids')">Bids</button>
+    <button onclick="showTab('reviews')">Reviews</button>
+  </nav>
+  <main>
+    <!-- USERS TAB -->
+    <div id="tab-users" class="tab-content active">
+      <h2>Users</h2>
+      <div id="list-section"><div class="section-title">All Users</div><div id="users-list">Loading...</div></div>
+      <form id="user-form">
+        <h3>Create User</h3>
+        <div id="user-msg"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Username</label><input name="username" required /></div>
+          <div class="form-group"><label>Email</label><input name="email" type="email" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Password</label><input name="password" type="password" required /></div>
+          <div class="form-group"><label>Role</label>
+            <select name="role"><option value="freelancer">Freelancer</option><option value="client">Client</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Bio</label><textarea name="bio"></textarea></div>
+          <div class="form-group"><label>Hourly Rate ($)</label><input name="hourly_rate" type="number" step="0.01" /></div>
+        </div>
+        <button type="submit">Create User</button>
+      </form>
+    </div>
+
+    <!-- GIGS TAB -->
+    <div id="tab-gigs" class="tab-content">
+      <h2>Gigs</h2>
+      <div id="list-section"><div class="section-title">All Gigs</div><div id="gigs-list">Loading...</div></div>
+      <form id="gig-form">
+        <h3>Post a Gig</h3>
+        <div id="gig-msg"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Title</label><input name="title" required /></div>
+          <div class="form-group"><label>Category</label><input name="category" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Description</label><textarea name="description" required></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Budget ($)</label><input name="budget" type="number" step="0.01" required /></div>
+          <div class="form-group"><label>Client ID</label><input name="client_id" type="number" required /></div>
+        </div>
+        <button type="submit">Post Gig</button>
+      </form>
+    </div>
+
+    <!-- JOBS TAB -->
+    <div id="tab-jobs" class="tab-content">
+      <h2>Jobs</h2>
+      <div id="list-section"><div class="section-title">All Jobs</div><div id="jobs-list">Loading...</div></div>
+      <form id="job-form">
+        <h3>Post a Job</h3>
+        <div id="job-msg"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Title</label><input name="title" required /></div>
+          <div class="form-group"><label>Skills Required</label><input name="skills_required" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Description</label><textarea name="description" required></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Budget Min ($)</label><input name="budget_min" type="number" step="0.01" required /></div>
+          <div class="form-group"><label>Budget Max ($)</label><input name="budget_max" type="number" step="0.01" required /></div>
+          <div class="form-group"><label>Client ID</label><input name="client_id" type="number" required /></div>
+        </div>
+        <button type="submit">Post Job</button>
+      </form>
+    </div>
+
+    <!-- BIDS TAB -->
+    <div id="tab-bids" class="tab-content">
+      <h2>Bids</h2>
+      <div id="list-section"><div class="section-title">All Bids</div><div id="bids-list">Loading...</div></div>
+      <form id="bid-form">
+        <h3>Submit a Bid</h3>
+        <div id="bid-msg"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Amount ($)</label><input name="amount" type="number" step="0.01" required /></div>
+          <div class="form-group"><label>Freelancer ID</label><input name="freelancer_id" type="number" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Gig ID (optional)</label><input name="gig_id" type="number" /></div>
+          <div class="form-group"><label>Job ID (optional)</label><input name="job_id" type="number" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Proposal</label><textarea name="proposal" required></textarea></div>
+        </div>
+        <button type="submit">Submit Bid</button>
+      </form>
+    </div>
+
+    <!-- REVIEWS TAB -->
+    <div id="tab-reviews" class="tab-content">
+      <h2>Reviews</h2>
+      <div id="list-section"><div class="section-title">All Reviews</div><div id="reviews-list">Loading...</div></div>
+      <form id="review-form">
+        <h3>Write a Review</h3>
+        <div id="review-msg"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Rating (1-5)</label><input name="rating" type="number" min="1" max="5" required /></div>
+          <div class="form-group"><label>Reviewer ID</label><input name="reviewer_id" type="number" required /></div>
+          <div class="form-group"><label>Reviewee ID</label><input name="reviewee_id" type="number" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Gig ID (optional)</label><input name="gig_id" type="number" /></div>
+          <div class="form-group"><label>Job ID (optional)</label><input name="job_id" type="number" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Comment</label><textarea name="comment" required></textarea></div>
+        </div>
+        <button type="submit">Submit Review</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    function showTab(name) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      event.target.classList.add('active');
+      loadList(name);
+    }
+
+    function showMsg(id, text, isError) {
+      const el = document.getElementById(id);
+      el.className = 'msg ' + (isError ? 'msg-error' : 'msg-success');
+      el.textContent = text;
+      setTimeout(() => { el.textContent = ''; el.className = ''; }, 4000);
+    }
+
+    function renderUsers(users) {
+      if (!users.length) return '<p style="color:#888">No users yet.</p>';
+      return users.map(u => `<div class="card"><h3>${u.username}</h3>
+        <p>${u.email} &bull; <span class="badge badge-open">${u.role}</span></p>
+        ${u.bio ? `<p>${u.bio}</p>` : ''}
+        ${u.hourly_rate ? `<p>$${u.hourly_rate}/hr</p>` : ''}
+      </div>`).join('');
+    }
+    function renderGigs(gigs) {
+      if (!gigs.length) return '<p style="color:#888">No gigs yet.</p>';
+      return gigs.map(g => `<div class="card"><h3>${g.title}</h3>
+        <p>${g.description}</p>
+        <p><strong>Category:</strong> ${g.category} &bull; <strong>Budget:</strong> $${g.budget} &bull; <span class="badge badge-open">${g.status}</span></p>
+      </div>`).join('');
+    }
+    function renderJobs(jobs) {
+      if (!jobs.length) return '<p style="color:#888">No jobs yet.</p>';
+      return jobs.map(j => `<div class="card"><h3>${j.title}</h3>
+        <p>${j.description}</p>
+        <p><strong>Skills:</strong> ${j.skills_required} &bull; <strong>Budget:</strong> $${j.budget_min}–$${j.budget_max} &bull; <span class="badge badge-open">${j.status}</span></p>
+      </div>`).join('');
+    }
+    function renderBids(bids) {
+      if (!bids.length) return '<p style="color:#888">No bids yet.</p>';
+      return bids.map(b => `<div class="card"><h3>Bid #${b.id} — $${b.amount}</h3>
+        <p>${b.proposal}</p>
+        <p><strong>Freelancer:</strong> ${b.freelancer_id} &bull; <span class="badge badge-${b.status}">${b.status}</span></p>
+      </div>`).join('');
+    }
+    function renderReviews(reviews) {
+      if (!reviews.length) return '<p style="color:#888">No reviews yet.</p>';
+      return reviews.map(r => `<div class="card"><h3>${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</h3>
+        <p>${r.comment}</p>
+        <p><strong>Reviewer:</strong> ${r.reviewer_id} → <strong>Reviewee:</strong> ${r.reviewee_id}</p>
+      </div>`).join('');
+    }
+
+    async function loadList(name) {
+      const el = document.getElementById(name + '-list');
+      try {
+        const res = await fetch('/api/' + name);
+        const data = await res.json();
+        const renderers = { users: renderUsers, gigs: renderGigs, jobs: renderJobs, bids: renderBids, reviews: renderReviews };
+        el.innerHTML = renderers[name](data);
+      } catch (e) { el.innerHTML = '<p style="color:red">Failed to load.</p>'; }
+    }
+
+    function formData(form) {
+      const fd = new FormData(form);
+      const obj = {};
+      fd.forEach((v, k) => { if (v !== '') obj[k] = isNaN(v) || v === '' ? v : Number(v); });
+      return obj;
+    }
+
+    async function handleSubmit(formId, endpoint, msgId, listName) {
+      document.getElementById(formId).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = formData(e.target);
+        try {
+          const res = await fetch('/api/' + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+          const json = await res.json();
+          if (!res.ok) { showMsg(msgId, json.error || 'Error', true); return; }
+          showMsg(msgId, 'Created successfully!', false);
+          e.target.reset();
+          loadList(listName);
+        } catch (err) { showMsg(msgId, 'Network error', true); }
+      });
+    }
+
+    handleSubmit('user-form', 'users', 'user-msg', 'users');
+    handleSubmit('gig-form', 'gigs', 'gig-msg', 'gigs');
+    handleSubmit('job-form', 'jobs', 'job-msg', 'jobs');
+    handleSubmit('bid-form', 'bids', 'bid-msg', 'bids');
+    handleSubmit('review-form', 'reviews', 'review-msg', 'reviews');
+
+    loadList('users');
+  </script>
+</body>
+</html>
