@@ -3,13 +3,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { db } = require('../firebase');
 const { authenticate } = require('../middleware/auth');
+const { generateId } = require('../utils');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
 
 // POST /register
 router.post('/register', async (req, res) => {

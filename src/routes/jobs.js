@@ -1,12 +1,9 @@
 const express = require('express');
 const { db } = require('../firebase');
 const { authenticate, requireRole } = require('../middleware/auth');
+const { generateId } = require('../utils');
 
 const router = express.Router();
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
 
 // POST / — create job (client only)
 router.post('/', authenticate, requireRole('client'), async (req, res) => {
