@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 const { db } = require('../firebase');
 const { authenticate } = require('../middleware/auth');
 const { generateId } = require('../utils');
+const { JWT_SECRET } = require('../config');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 // POST /register
 router.post('/register', async (req, res) => {

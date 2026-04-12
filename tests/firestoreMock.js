@@ -1,13 +1,10 @@
 // In-memory Firestore mock
 
 const store = {};
+const { generateId } = require('../src/utils');
 
 function reset() {
   Object.keys(store).forEach(k => delete store[k]);
-}
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
 class DocumentSnapshot {
