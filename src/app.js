@@ -1,8 +1,10 @@
 const express = require('express');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Apply rate limiting to all API routes
 const apiLimiter = rateLimit({
