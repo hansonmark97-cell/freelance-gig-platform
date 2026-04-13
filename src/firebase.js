@@ -1,5 +1,5 @@
 let db;
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
   db = require('../tests/firestoreMock');
 } else {
   const admin = require('firebase-admin');
