@@ -138,4 +138,72 @@ describe('Jobs API', () => {
     const res = await request(app).delete(`/api/jobs/${id}`).set('Authorization', `Bearer ${otherToken}`);
     expect(res.status).toBe(403);
   });
+
+  test('GET /api/jobs - search by title keyword', async () => {
+    const token = await registerAndLogin(client);
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Need a React Developer', description: 'Build SPA', category: 'dev', budgetUsd: 500,
+    });
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Logo Design Needed', description: 'Create brand logo', category: 'design', budgetUsd: 150,
+    });
+
+    const res = await request(app).get('/api/jobs?search=react');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].title).toBe('Need a React Developer');
+  });
+
+  test('GET /api/jobs - search by description keyword', async () => {
+    const token = await registerAndLogin(client);
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Job A', description: 'Looking for a Figma expert', category: 'design', budgetUsd: 200,
+    });
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Job B', description: 'Express API development', category: 'dev', budgetUsd: 300,
+    });
+
+    const res = await request(app).get('/api/jobs?search=figma');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].description).toContain('Figma');
+  });
+
+  test('GET /api/jobs - search with no matches returns empty array', async () => {
+    const token = await registerAndLogin(client);
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Web Development', description: 'Need a site', category: 'web', budgetUsd: 500,
+    });
+
+    const res = await request(app).get('/api/jobs?search=blockchain');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
+
+  test('GET /api/jobs - pagination slices results and sets headers', async () => {
+    const token = await registerAndLogin(client);
+    for (let i = 1; i <= 5; i++) {
+      await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+        title: `Job ${i}`, description: 'desc', category: 'web', budgetUsd: 300,
+      });
+    }
+
+    const res = await request(app).get('/api/jobs?page=1&limit=3');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(3);
+    expect(res.headers['x-total-count']).toBe('5');
+    expect(res.headers['x-page']).toBe('1');
+    expect(res.headers['x-limit']).toBe('3');
+  });
+
+  test('GET /api/jobs - X-Total-Count set even without pagination params', async () => {
+    const token = await registerAndLogin(client);
+    await request(app).post('/api/jobs').set('Authorization', `Bearer ${token}`).send({
+      title: 'A Job', description: 'desc', category: 'dev', budgetUsd: 400,
+    });
+
+    const res = await request(app).get('/api/jobs');
+    expect(res.status).toBe(200);
+    expect(res.headers['x-total-count']).toBe('1');
+  });
 });

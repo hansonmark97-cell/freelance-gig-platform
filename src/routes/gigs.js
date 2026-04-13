@@ -34,10 +34,10 @@ router.post('/', authenticate, requireRole('freelancer'), async (req, res) => {
   }
 });
 
-// GET / — list gigs
+// GET / — list gigs (supports search, page, limit)
 router.get('/', async (req, res) => {
   try {
-    const { category, minPrice, maxPrice, status } = req.query;
+    const { category, minPrice, maxPrice, status, search, page, limit } = req.query;
     let query = db.collection('gigs').where('status', '==', status || 'active');
 
     if (category) query = query.where('category', '==', category);
@@ -45,7 +45,28 @@ router.get('/', async (req, res) => {
     if (maxPrice != null) query = query.where('priceUsd', '<=', Number(maxPrice));
 
     const snapshot = await query.get();
-    const gigs = snapshot.docs.map(d => d.data());
+    let gigs = snapshot.docs.map(d => d.data());
+
+    if (search) {
+      const term = search.toLowerCase();
+      gigs = gigs.filter(g =>
+        g.title.toLowerCase().includes(term) ||
+        g.description.toLowerCase().includes(term)
+      );
+    }
+
+    const total = gigs.length;
+    res.set('X-Total-Count', String(total));
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const start = (pageNum - 1) * limitNum;
+      gigs = gigs.slice(start, start + limitNum);
+      res.set('X-Page', String(pageNum));
+      res.set('X-Limit', String(limitNum));
+    }
+
     return res.json(gigs);
   } catch (err) {
     return res.status(500).json({ error: err.message });

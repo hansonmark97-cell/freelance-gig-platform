@@ -155,4 +155,86 @@ describe('Gigs API', () => {
     const res = await request(app).delete(`/api/gigs/${id}`).set('Authorization', `Bearer ${otherToken}`);
     expect(res.status).toBe(403);
   });
+
+  test('GET /api/gigs - search by title keyword', async () => {
+    const token = await registerAndLogin(freelancer);
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Logo Design Pro', description: 'I make logos', category: 'design', priceUsd: 50, deliveryDays: 2,
+    });
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'React Development', description: 'Frontend work', category: 'dev', priceUsd: 200, deliveryDays: 5,
+    });
+
+    const res = await request(app).get('/api/gigs?search=logo');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].title).toBe('Logo Design Pro');
+  });
+
+  test('GET /api/gigs - search by description keyword', async () => {
+    const token = await registerAndLogin(freelancer);
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Gig A', description: 'Expert in Photoshop editing', category: 'design', priceUsd: 50, deliveryDays: 2,
+    });
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Gig B', description: 'Node.js backend developer', category: 'dev', priceUsd: 100, deliveryDays: 3,
+    });
+
+    const res = await request(app).get('/api/gigs?search=photoshop');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].description).toContain('Photoshop');
+  });
+
+  test('GET /api/gigs - search with no matches returns empty array', async () => {
+    const token = await registerAndLogin(freelancer);
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'Logo Design', description: 'I make logos', category: 'design', priceUsd: 50, deliveryDays: 2,
+    });
+
+    const res = await request(app).get('/api/gigs?search=blockchain');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
+
+  test('GET /api/gigs - pagination slices results and sets headers', async () => {
+    const token = await registerAndLogin(freelancer);
+    for (let i = 1; i <= 5; i++) {
+      await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+        title: `Gig ${i}`, description: 'desc', category: 'design', priceUsd: 50, deliveryDays: 2,
+      });
+    }
+
+    const res = await request(app).get('/api/gigs?page=1&limit=2');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(2);
+    expect(res.headers['x-total-count']).toBe('5');
+    expect(res.headers['x-page']).toBe('1');
+    expect(res.headers['x-limit']).toBe('2');
+  });
+
+  test('GET /api/gigs - page 2 returns next slice', async () => {
+    const token = await registerAndLogin(freelancer);
+    for (let i = 1; i <= 5; i++) {
+      await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+        title: `Gig ${i}`, description: 'desc', category: 'design', priceUsd: 50, deliveryDays: 2,
+      });
+    }
+
+    const res = await request(app).get('/api/gigs?page=2&limit=2');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(2);
+    expect(res.headers['x-total-count']).toBe('5');
+  });
+
+  test('GET /api/gigs - X-Total-Count set even without pagination params', async () => {
+    const token = await registerAndLogin(freelancer);
+    await request(app).post('/api/gigs').set('Authorization', `Bearer ${token}`).send({
+      title: 'A Gig', description: 'desc', category: 'design', priceUsd: 50, deliveryDays: 2,
+    });
+
+    const res = await request(app).get('/api/gigs');
+    expect(res.status).toBe(200);
+    expect(res.headers['x-total-count']).toBe('1');
+  });
 });

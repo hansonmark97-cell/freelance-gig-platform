@@ -33,16 +33,37 @@ router.post('/', authenticate, requireRole('client'), async (req, res) => {
   }
 });
 
-// GET / — list jobs
+// GET / — list jobs (supports search, page, limit)
 router.get('/', async (req, res) => {
   try {
-    const { category, status } = req.query;
+    const { category, status, search, page, limit } = req.query;
     let query = db.collection('jobs').where('status', '==', status || 'open');
 
     if (category) query = query.where('category', '==', category);
 
     const snapshot = await query.get();
-    const jobs = snapshot.docs.map(d => d.data());
+    let jobs = snapshot.docs.map(d => d.data());
+
+    if (search) {
+      const term = search.toLowerCase();
+      jobs = jobs.filter(j =>
+        j.title.toLowerCase().includes(term) ||
+        j.description.toLowerCase().includes(term)
+      );
+    }
+
+    const total = jobs.length;
+    res.set('X-Total-Count', String(total));
+
+    if (page !== undefined || limit !== undefined) {
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const start = (pageNum - 1) * limitNum;
+      jobs = jobs.slice(start, start + limitNum);
+      res.set('X-Page', String(pageNum));
+      res.set('X-Limit', String(limitNum));
+    }
+
     return res.json(jobs);
   } catch (err) {
     return res.status(500).json({ error: err.message });

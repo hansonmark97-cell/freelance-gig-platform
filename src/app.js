@@ -23,5 +23,6 @@ app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/bids', require('./routes/bids'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/messages', require('./routes/messages'));
 
 module.exports = app;
