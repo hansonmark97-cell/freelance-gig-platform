@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── helpers ────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── users ───────────────────────────────────────────────────────────────
+    // Users can read and update their own profile; creation happens at
+    // registration time (admin SDK bypasses these rules, so the API handles
+    // duplicate-email checks server-side).
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isOwner(userId)
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                       .hasAny(['email', 'passwordHash', 'role', 'createdAt']);
+      allow delete: if false;
+    }
+
+    // ── gigs ────────────────────────────────────────────────────────────────
+    // Anyone may list/read active gigs; only the owning freelancer may
+    // create or modify their own gigs.
+    match /gigs/{gigId} {
+      allow read: if resource.data.status == 'active'
+                  || (isSignedIn() && resource.data.freelancerId == request.auth.uid);
+      allow create: if isSignedIn()
+                    && request.resource.data.freelancerId == request.auth.uid;
+      allow update: if isSignedIn()
+                    && resource.data.freelancerId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── jobs ─────────────────────────────────────────────────────────────────
+    // Anyone may list/read open jobs; only the owning client may create or
+    // modify their own jobs.
+    match /jobs/{jobId} {
+      allow read: if resource.data.status == 'open'
+                  || (isSignedIn() && resource.data.clientId == request.auth.uid);
+      allow create: if isSignedIn()
+                    && request.resource.data.clientId == request.auth.uid;
+      allow update: if isSignedIn()
+                    && resource.data.clientId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── bids ─────────────────────────────────────────────────────────────────
+    // Authenticated users may read bids; only freelancers may place bids on
+    // their own behalf; bid status changes (accept/reject) are enforced by
+    // the server via admin SDK.
+    match /bids/{bidId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.freelancerId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ── reviews ───────────────────────────────────────────────────────────────
+    // Anyone may read reviews; authenticated users may create a review on
+    // behalf of themselves.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+                    && request.resource.data.reviewerId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
