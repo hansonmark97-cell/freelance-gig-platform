@@ -199,6 +199,8 @@
     /* HIDDEN */
     .hidden { display: none !important; }
 
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
       .hero h1 { font-size: 1.75rem; }
@@ -342,6 +344,7 @@ function render() {
     case 'gig':       renderGigDetail(app); break;
     case 'job':       renderJobDetail(app); break;
     case 'create-gig': renderCreateGig(app); break;
+    case 'edit-gig':  renderEditGig(app); break;
     case 'post-job':  renderPostJob(app); break;
     case 'dashboard': renderDashboard(app); break;
     case 'profile':   renderProfile(app); break;
@@ -966,6 +969,99 @@ async function doCreateGig(e) {
   }
 }
 
+/* ===== EDIT GIG ===== */
+async function renderEditGig(app) {
+  if (!state.user || state.user.role !== 'freelancer') {
+    app.innerHTML = `<div class="alert alert-error">Only freelancers can edit gigs.</div>`;
+    return;
+  }
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const gig = await api('GET', `/gigs/${state.params.id}`);
+    if (gig.freelancerId !== state.user.id) {
+      app.innerHTML = `<div class="alert alert-error">You are not authorized to edit this gig.</div>`;
+      return;
+    }
+    app.innerHTML = `
+      <div class="form-page">
+        <div style="margin-bottom:1rem">
+          <button class="btn btn-secondary btn-sm" onclick="navigate('gig',{id:'${gig.id}'})">← Back to Gig</button>
+        </div>
+        <div class="form-card">
+          <h2>Edit Gig</h2>
+          <form onsubmit="doEditGig(event,'${gig.id}')">
+            <div class="form-group">
+              <label>Gig Title</label>
+              <input type="text" id="edit-gig-title" placeholder="I will design a professional logo…" value="${esc(gig.title)}" required />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="edit-gig-desc" placeholder="Describe what you offer…" style="min-height:120px" required>${esc(gig.description)}</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="edit-gig-cat">
+                  ${categoryOptions(gig.category)}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Price (USD)</label>
+                <input type="number" id="edit-gig-price" placeholder="50" min="1" step="0.01" value="${gig.priceUsd}" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Delivery Days</label>
+                <input type="number" id="edit-gig-days" placeholder="3" min="1" value="${gig.deliveryDays}" required />
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="edit-gig-status">
+                  <option value="active" ${gig.status === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="paused" ${gig.status === 'paused' ? 'selected' : ''}>Paused</option>
+                </select>
+              </div>
+            </div>
+            <div id="edit-gig-error" class="alert alert-error hidden"></div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="navigate('gig',{id:'${gig.id}'})">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="edit-gig-btn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function doEditGig(e, gigId) {
+  e.preventDefault();
+  const btn = document.getElementById('edit-gig-btn');
+  const errEl = document.getElementById('edit-gig-error');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  errEl.classList.add('hidden');
+  try {
+    await api('PUT', `/gigs/${gigId}`, {
+      title: document.getElementById('edit-gig-title').value,
+      description: document.getElementById('edit-gig-desc').value,
+      category: document.getElementById('edit-gig-cat').value,
+      priceUsd: parseFloat(document.getElementById('edit-gig-price').value),
+      deliveryDays: parseInt(document.getElementById('edit-gig-days').value),
+      status: document.getElementById('edit-gig-status').value,
+    });
+    navigate('gig', { id: gigId });
+    showToast('Gig updated!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
 /* ===== POST JOB ===== */
 function renderPostJob(app) {
   if (!state.user || state.user.role !== 'client') {
@@ -1303,9 +1399,9 @@ function emptyState(icon, title, msg) {
   return `<div class="empty"><div class="empty-icon">${icon}</div><h3>${title}</h3><p>${msg}</p></div>`;
 }
 
-function categoryOptions() {
+function categoryOptions(selected) {
   const cats = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Music', 'Business', 'Data', 'Other'];
-  return cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  return cats.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
 }
 
 function showToast(msg) {
