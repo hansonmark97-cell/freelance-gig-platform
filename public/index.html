@@ -370,7 +370,7 @@ async function loadJobs() {
       <span class="badge badge-blue">${j.status}</span>
       <div class="actions">
         ${currentUser.role === 'freelancer'
-          ? `<button class="btn btn-primary btn-sm" onclick="openBidModal('${j.id}','${esc(j.title).replace(/'/g,"\\'")}')">Place Bid</button>`
+          ? `<button class="btn btn-primary btn-sm" data-jobid="${esc(j.id)}" data-jobtitle="${esc(j.title)}" onclick="openBidModalFromBtn(this)">Place Bid</button>`
           : ''}
       </div>
     </div>`).join('');
@@ -396,6 +396,9 @@ function openBidModal(jobId, jobTitle) {
   document.getElementById('bidMessage').value = '';
   clearMsg('bidModalMsg');
   document.getElementById('bidModal').classList.remove('hidden');
+}
+function openBidModalFromBtn(btn) {
+  openBidModal(btn.dataset.jobid, btn.dataset.jobtitle);
 }
 function closeBidModal() { document.getElementById('bidModal').classList.add('hidden'); }
 
