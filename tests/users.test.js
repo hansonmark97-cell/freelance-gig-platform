@@ -39,7 +39,7 @@ describe('Users API', () => {
   });
 
   test('POST /api/users/register - invalid role returns 400', async () => {
-    const res = await request(app).post('/api/users/register').send({ ...clientUser, role: 'admin' });
+    const res = await request(app).post('/api/users/register').send({ ...clientUser, role: 'superuser' });
     expect(res.status).toBe(400);
   });
 

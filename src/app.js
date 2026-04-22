@@ -24,4 +24,11 @@ app.use('/api/bids', require('./routes/bids'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/payments', require('./routes/payments'));
 
+// Trucking app routes
+app.use('/api/loads', require('./routes/loads'));
+app.use('/api/quotes', require('./routes/quotes'));
+app.use('/api/shipments', require('./routes/shipments'));
+app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/admin', require('./routes/admin'));
+
 module.exports = app;
