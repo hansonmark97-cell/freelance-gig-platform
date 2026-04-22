@@ -15,8 +15,8 @@ router.post('/register', async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ error: 'name, email, password, and role are required' });
     }
-    if (!['freelancer', 'client'].includes(role)) {
-      return res.status(400).json({ error: 'role must be freelancer or client' });
+    if (!['freelancer', 'client', 'shipper', 'carrier', 'driver', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'role must be freelancer, client, shipper, carrier, driver, or admin' });
     }
 
     // Check duplicate email
