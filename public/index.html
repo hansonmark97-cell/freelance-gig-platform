@@ -6,462 +6,1416 @@
   <title>FreelanceHub</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #f5f7fa; color: #1a202c; min-height: 100vh; }
 
-    /* Nav */
-    nav { background: #2d3748; color: #fff; display: flex; align-items: center; padding: 0 1.5rem; height: 56px; gap: 1rem; }
-    nav .brand { font-weight: 700; font-size: 1.2rem; flex: 1; }
-    nav button { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
-    nav button:hover { background: rgba(255,255,255,0.1); }
-    #userInfo { font-size: 0.85rem; color: #a0aec0; }
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #eef2ff;
+      --secondary: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+    }
 
-    /* Main layout */
-    main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* Cards */
-    .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #2d3748; }
+    /* NAV */
+    nav { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 60px; display: flex; align-items: center; gap: 1rem; }
+    .nav-logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); cursor: pointer; text-decoration: none; flex-shrink: 0; }
+    .nav-logo span { color: var(--secondary); }
+    .nav-links { display: flex; gap: .25rem; flex: 1; }
+    .nav-links button { background: none; border: none; padding: .5rem .75rem; border-radius: var(--radius); cursor: pointer; font-size: .9rem; color: var(--text-muted); font-weight: 500; transition: all .15s; }
+    .nav-links button:hover, .nav-links button.active { background: var(--primary-light); color: var(--primary); }
+    .nav-actions { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+    .nav-user { font-size: .875rem; color: var(--text-muted); display: flex; align-items: center; gap: .5rem; }
+    .nav-user strong { color: var(--text); }
+    .badge { font-size: .7rem; font-weight: 600; padding: .15rem .5rem; border-radius: 999px; text-transform: uppercase; }
+    .badge-freelancer { background: #dbeafe; color: #1d4ed8; }
+    .badge-client { background: #dcfce7; color: #15803d; }
 
-    /* Tabs */
-    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .tabs button { padding: 0.45rem 1rem; border-radius: 20px; border: 2px solid #4a90d9; background: #fff; color: #4a90d9; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-    .tabs button.active { background: #4a90d9; color: #fff; }
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.1rem; border-radius: var(--radius); font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: var(--white); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg); }
+    .btn-success { background: var(--secondary); color: var(--white); }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: var(--danger); color: var(--white); }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-ghost:hover { background: var(--primary-light); }
+    .btn-sm { padding: .35rem .7rem; font-size: .8rem; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-    /* Forms */
-    .form-group { margin-bottom: 1rem; }
-    label { display: block; font-size: 0.8rem; font-weight: 600; color: #4a5568; margin-bottom: 0.3rem; }
-    input, select, textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.9rem; }
-    textarea { resize: vertical; min-height: 80px; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: #4a90d9; }
+    /* MAIN */
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-    /* Buttons */
-    .btn { display: inline-block; padding: 0.5rem 1.2rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
-    .btn-primary { background: #4a90d9; color: #fff; }
-    .btn-primary:hover { background: #357abd; }
-    .btn-secondary { background: #e2e8f0; color: #2d3748; }
-    .btn-secondary:hover { background: #cbd5e0; }
-    .btn-danger { background: #e53e3e; color: #fff; }
-    .btn-danger:hover { background: #c53030; }
-    .btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+    /* HERO */
+    .hero { background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); border-radius: 16px; padding: 4rem 2rem; text-align: center; color: white; margin-bottom: 3rem; }
+    .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+    .hero p { font-size: 1.1rem; opacity: .9; max-width: 500px; margin: 0 auto 2rem; }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn { padding: .75rem 1.5rem; font-size: 1rem; }
+    .btn-white { background: white; color: var(--primary); }
+    .btn-white:hover { background: #f3f4f6; }
+    .btn-outline-white { background: transparent; color: white; border: 2px solid rgba(255,255,255,.6); }
+    .btn-outline-white:hover { background: rgba(255,255,255,.1); }
 
-    /* Grid of listing cards */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-    .list-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    .list-card h3 { font-size: 0.95rem; color: #2d3748; }
-    .list-card .meta { font-size: 0.78rem; color: #718096; }
-    .list-card .price { font-weight: 700; color: #38a169; }
-    .list-card .actions { margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
-    .badge-green { background: #c6f6d5; color: #276749; }
-    .badge-blue { background: #bee3f8; color: #2b6cb0; }
-    .badge-yellow { background: #fefcbf; color: #744210; }
+    /* SECTION */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .section-header h2 { font-size: 1.5rem; font-weight: 700; }
 
-    /* Alert */
-    .alert { padding: 0.7rem 1rem; border-radius: 6px; font-size: 0.85rem; margin-bottom: 1rem; }
-    .alert-error { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; }
-    .alert-success { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+    /* FILTERS */
+    .filters { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .filters select, .filters input { padding: .5rem .75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .875rem; background: var(--white); color: var(--text); outline: none; }
+    .filters select:focus, .filters input:focus { border-color: var(--primary); }
 
-    /* Auth panel */
-    #authPanel { display: flex; justify-content: center; padding: 3rem 1rem; }
-    #authPanel .card { width: 100%; max-width: 420px; }
-    #authPanel .toggle { text-align: center; margin-top: 1rem; font-size: 0.85rem; }
-    #authPanel .toggle a { color: #4a90d9; cursor: pointer; text-decoration: underline; }
+    /* GRID */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
 
+    /* CARD */
+    .card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; box-shadow: var(--shadow); transition: box-shadow .15s, transform .15s; cursor: pointer; }
+    .card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; }
+    .card h3 { font-size: 1rem; font-weight: 600; line-height: 1.4; flex: 1; }
+    .card p { font-size: .875rem; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: .75rem; }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+    .price { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+    .price-budget { color: var(--secondary); }
+    .cat-tag { background: var(--primary-light); color: var(--primary); font-size: .75rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; white-space: nowrap; }
+    .meta { font-size: .75rem; color: var(--text-muted); }
+
+    /* DETAIL */
+    .detail-page { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start; }
+    @media (max-width: 768px) { .detail-page { grid-template-columns: 1fr; } }
+    .detail-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.75rem; box-shadow: var(--shadow); }
+    .detail-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .75rem; line-height: 1.3; }
+    .detail-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; font-size: .875rem; color: var(--text-muted); }
+    .detail-meta span { display: flex; align-items: center; gap: .3rem; }
+    .detail-body { font-size: .95rem; line-height: 1.7; color: #374151; white-space: pre-wrap; margin-bottom: 1.5rem; }
+    .detail-sidebar > * + * { margin-top: 1rem; }
+
+    /* SIDEBAR CARD */
+    .sidebar-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; box-shadow: var(--shadow); }
+    .sidebar-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+    .sidebar-price { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .sidebar-meta { font-size: .85rem; color: var(--text-muted); margin-bottom: .25rem; }
+    .sidebar-card .btn { width: 100%; justify-content: center; margin-top: .75rem; }
+
+    /* FORM */
+    .form-page { max-width: 640px; margin: 0 auto; }
+    .form-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; box-shadow: var(--shadow); }
+    .form-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: .4rem; color: var(--text); }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: .6rem .85rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; font-family: inherit; outline: none; transition: border .15s; background: var(--white); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-actions { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .form-error { color: var(--danger); font-size: .825rem; margin-top: .35rem; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal { background: var(--white); border-radius: 12px; padding: 2rem; width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); }
+    .modal h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: .5rem; }
+    .modal p { color: var(--text-muted); font-size: .875rem; margin-bottom: 1.5rem; }
+    .modal-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .modal-tab { flex: 1; padding: .6rem; background: none; border: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+    .modal-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .modal-close { float: right; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); margin-top: -.5rem; }
+
+    /* TABS */
+    .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; gap: .25rem; }
+    .tab { padding: .6rem 1rem; background: none; border: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* BIDS LIST */
+    .bid-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .75rem; display: flex; align-items: flex-start; gap: 1rem; }
+    .bid-body { flex: 1; }
+    .bid-amount { font-size: 1.1rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
+    .bid-message { font-size: .875rem; color: var(--text-muted); margin-top: .3rem; line-height: 1.5; }
+    .bid-meta { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
+    .bid-actions { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; flex-shrink: 0; }
+    .status-badge { font-size: .75rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-accepted { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-open { background: #dbeafe; color: #1e40af; }
+    .status-in_progress { background: #ede9fe; color: #5b21b6; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #f3f4f6; color: #6b7280; }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-deleted { background: #fee2e2; color: #991b1b; }
+
+    /* REVIEWS */
+    .review-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .75rem; }
+    .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+    .stars { color: var(--warning); font-size: .95rem; letter-spacing: .05rem; }
+    .review-comment { font-size: .875rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ALERTS */
+    .alert { padding: .85rem 1rem; border-radius: var(--radius); font-size: .875rem; margin-bottom: 1rem; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .alert-info { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #c7d2fe; }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: .5rem; color: var(--text); }
+    .empty p { font-size: .875rem; }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: .9rem; }
+
+    /* AVATAR */
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* DIVIDER */
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* RATING STARS */
+    .star-input { display: flex; gap: .25rem; }
+    .star-input span { font-size: 1.5rem; cursor: pointer; color: #d1d5db; transition: color .1s; }
+    .star-input span.filled { color: var(--warning); }
+
+    /* PROFILE */
+    .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: white; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+    .profile-info h2 { font-size: 1.5rem; font-weight: 700; }
+    .profile-info p { color: var(--text-muted); font-size: .9rem; margin-top: .25rem; }
+
+    /* HIDDEN */
     .hidden { display: none !important; }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-    /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-    .modal { background: #fff; border-radius: 8px; padding: 1.5rem; width: 100%; max-width: 440px; position: relative; }
-    .modal h2 { margin-bottom: 1rem; font-size: 1rem; }
-    .modal-close { position: absolute; top: 0.75rem; right: 1rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #718096; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.75rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .bid-item { flex-direction: column; }
+      .bid-actions { flex-direction: row; align-items: center; }
+    }
   </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
-  <span class="brand">🚀 FreelanceHub</span>
-  <span id="userInfo"></span>
-  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+  <div class="nav-inner">
+    <a class="nav-logo" onclick="navigate('home')" href="#"><span>Freelance</span>Hub</a>
+    <div class="nav-links">
+      <button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>
+      <button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>
+    </div>
+    <div class="nav-actions" id="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="openAuth('login')">Log In</button>
+      <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Sign Up</button>
+    </div>
+  </div>
 </nav>
 
-<!-- Auth Panel -->
-<div id="authPanel">
-  <div class="card">
-    <div id="authMsg"></div>
-    <!-- Login form -->
-    <div id="loginForm">
-      <h2>Sign In</h2>
-      <div class="form-group"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" /></div>
-      <div class="form-group"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" /></div>
-      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
-      <div class="toggle">Don't have an account? <a onclick="showRegister()">Register</a></div>
-    </div>
-    <!-- Register form -->
-    <div id="registerForm" class="hidden">
-      <h2>Create Account</h2>
-      <div class="form-group"><label>Full Name</label><input id="regName" type="text" placeholder="Jane Doe" /></div>
-      <div class="form-group"><label>Email</label><input id="regEmail" type="email" placeholder="you@example.com" /></div>
-      <div class="form-group"><label>Password</label><input id="regPassword" type="password" placeholder="At least 6 characters" /></div>
-      <div class="form-group">
-        <label>I am a…</label>
-        <select id="regRole">
-          <option value="freelancer">Freelancer – I offer services</option>
-          <option value="client">Client – I need services</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" style="width:100%" onclick="doRegister()">Create Account</button>
-      <div class="toggle">Already have an account? <a onclick="showLogin()">Sign In</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- App Panel (shown after login) -->
-<main id="appPanel" class="hidden">
-  <div id="appMsg"></div>
-
-  <div class="tabs" id="mainTabs"></div>
-
-  <!-- Browse Gigs -->
-  <div id="tabGigs" class="hidden">
-    <div class="card">
-      <h2>Browse Gigs</h2>
-      <div class="two-col" style="margin-bottom:1rem;">
-        <div class="form-group" style="margin-bottom:0"><label>Category</label>
-          <select id="gigFilterCat" onchange="loadGigs()">
-            <option value="">All categories</option>
-            <option>Design</option><option>Development</option><option>Writing</option>
-            <option>Marketing</option><option>Video</option><option>Other</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:0"><label>Max Price ($)</label>
-          <input id="gigFilterMax" type="number" placeholder="any" onchange="loadGigs()" />
-        </div>
-      </div>
-      <div id="gigList" class="grid"></div>
-    </div>
-  </div>
-
-  <!-- Browse Jobs -->
-  <div id="tabJobs" class="hidden">
-    <div class="card">
-      <h2>Browse Jobs</h2>
-      <div class="form-group" style="max-width:240px;margin-bottom:1rem;"><label>Category</label>
-        <select id="jobFilterCat" onchange="loadJobs()">
-          <option value="">All categories</option>
-          <option>Design</option><option>Development</option><option>Writing</option>
-          <option>Marketing</option><option>Video</option><option>Other</option>
-        </select>
-      </div>
-      <div id="jobList" class="grid"></div>
-    </div>
-  </div>
-
-  <!-- Post Gig (freelancer) -->
-  <div id="tabPostGig" class="hidden">
-    <div class="card" style="max-width:520px">
-      <h2>Post a New Gig</h2>
-      <div class="form-group"><label>Title</label><input id="gigTitle" placeholder="e.g. I will design your logo" /></div>
-      <div class="form-group"><label>Description</label><textarea id="gigDesc" placeholder="Describe what you offer…"></textarea></div>
-      <div class="two-col">
-        <div class="form-group"><label>Category</label>
-          <select id="gigCat">
-            <option>Design</option><option>Development</option><option>Writing</option>
-            <option>Marketing</option><option>Video</option><option>Other</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Price (USD)</label><input id="gigPrice" type="number" min="1" placeholder="50" /></div>
-      </div>
-      <div class="form-group"><label>Delivery (days)</label><input id="gigDays" type="number" min="1" placeholder="3" /></div>
-      <button class="btn btn-primary" onclick="createGig()">Post Gig</button>
-    </div>
-  </div>
-
-  <!-- Post Job (client) -->
-  <div id="tabPostJob" class="hidden">
-    <div class="card" style="max-width:520px">
-      <h2>Post a New Job</h2>
-      <div class="form-group"><label>Title</label><input id="jobTitle" placeholder="e.g. Build me a landing page" /></div>
-      <div class="form-group"><label>Description</label><textarea id="jobDesc" placeholder="Describe what you need…"></textarea></div>
-      <div class="two-col">
-        <div class="form-group"><label>Category</label>
-          <select id="jobCat">
-            <option>Design</option><option>Development</option><option>Writing</option>
-            <option>Marketing</option><option>Video</option><option>Other</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Budget (USD)</label><input id="jobBudget" type="number" min="1" placeholder="200" /></div>
-      </div>
-      <button class="btn btn-primary" onclick="createJob()">Post Job</button>
-    </div>
-  </div>
-
-  <!-- My Bids (freelancer) -->
-  <div id="tabMyBids" class="hidden">
-    <div class="card">
-      <h2>My Bids</h2>
-      <div id="myBidList" class="grid"></div>
-    </div>
-  </div>
-
-  <!-- My Profile -->
-  <div id="tabProfile" class="hidden">
-    <div class="card" style="max-width:480px">
-      <h2>My Profile</h2>
-      <div id="profileInfo"></div>
-    </div>
-  </div>
-</main>
-
-<!-- Bid Modal -->
-<div id="bidModal" class="modal-overlay hidden">
+<!-- AUTH MODAL -->
+<div class="modal-overlay hidden" id="auth-modal">
   <div class="modal">
-    <button class="modal-close" onclick="closeBidModal()">✕</button>
-    <h2>Place a Bid</h2>
-    <div id="bidModalMsg"></div>
-    <div class="form-group"><label>Job</label><input id="bidJobTitle" readonly /></div>
-    <div class="form-group"><label>Amount (USD)</label><input id="bidAmount" type="number" min="1" placeholder="100" /></div>
-    <div class="form-group"><label>Message</label><textarea id="bidMessage" placeholder="Describe your proposal…"></textarea></div>
-    <button class="btn btn-primary" onclick="submitBid()">Submit Bid</button>
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+      <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Password" required />
+      </div>
+      <div id="login-error" class="alert alert-error hidden"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="login-btn">Log In</button>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="register-form" class="hidden" onsubmit="doRegister(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Jane Smith" required />
+        </div>
+        <div class="form-group">
+          <label>I am a</label>
+          <select id="reg-role">
+            <option value="freelancer">Freelancer</option>
+            <option value="client">Client</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters" minlength="6" required />
+      </div>
+      <div id="register-error" class="alert alert-error hidden"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="register-btn">Create Account</button>
+    </form>
   </div>
 </div>
+
+<!-- MAIN CONTENT -->
+<main id="app"></main>
 
 <script>
-const API = '/api';
-let token = localStorage.getItem('token');
-let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-let bidTargetJobId = null;
+/* ===== STATE ===== */
+let state = {
+  view: 'home',
+  params: {},
+  user: null,
+  token: null,
+};
 
-/* ── Auth ───────────────────────────────────────────── */
-function showLogin() {
-  document.getElementById('loginForm').classList.remove('hidden');
-  document.getElementById('registerForm').classList.add('hidden');
-  clearMsg('authMsg');
-}
-function showRegister() {
-  document.getElementById('registerForm').classList.remove('hidden');
-  document.getElementById('loginForm').classList.add('hidden');
-  clearMsg('authMsg');
-}
+/* ===== INIT ===== */
+(function init() {
+  const saved = localStorage.getItem('flh_token');
+  const savedUser = localStorage.getItem('flh_user');
+  if (saved && savedUser) {
+    state.token = saved;
+    state.user = JSON.parse(savedUser);
+  }
+  renderNav();
+  navigate('home');
+})();
 
-async function doLogin() {
-  const email = v('loginEmail'), password = v('loginPassword');
-  const res = await api('POST', '/users/login', { email, password });
-  if (res.error) return showMsg('authMsg', res.error, true);
-  saveSession(res.token, res.user);
-  initApp();
-}
-
-async function doRegister() {
-  const name = v('regName'), email = v('regEmail'), password = v('regPassword'), role = v('regRole');
-  const res = await api('POST', '/users/register', { name, email, password, role });
-  if (res.error) return showMsg('authMsg', res.error, true);
-  saveSession(res.token, res.user);
-  initApp();
-}
-
-function saveSession(t, u) {
-  token = t; currentUser = u;
-  localStorage.setItem('token', t);
-  localStorage.setItem('user', JSON.stringify(u));
-}
-
-function logout() {
-  token = null; currentUser = null;
-  localStorage.removeItem('token'); localStorage.removeItem('user');
-  document.getElementById('appPanel').classList.add('hidden');
-  document.getElementById('authPanel').classList.remove('hidden');
-  document.getElementById('logoutBtn').classList.add('hidden');
-  document.getElementById('userInfo').textContent = '';
-}
-
-/* ── App bootstrap ──────────────────────────────────── */
-function initApp() {
-  document.getElementById('authPanel').classList.add('hidden');
-  document.getElementById('appPanel').classList.remove('hidden');
-  document.getElementById('logoutBtn').classList.remove('hidden');
-  document.getElementById('userInfo').textContent = `${currentUser.name} (${currentUser.role})`;
-  buildTabs();
-  switchTab(currentUser.role === 'freelancer' ? 'tabGigs' : 'tabJobs');
-}
-
-function buildTabs() {
-  const tabs = document.getElementById('mainTabs');
-  const defs = [
-    { id: 'tabGigs',    label: '🔍 Browse Gigs',   roles: ['freelancer','client'] },
-    { id: 'tabJobs',    label: '📋 Browse Jobs',    roles: ['freelancer','client'] },
-    { id: 'tabPostGig', label: '➕ Post Gig',       roles: ['freelancer'] },
-    { id: 'tabPostJob', label: '➕ Post Job',       roles: ['client'] },
-    { id: 'tabMyBids',  label: '💼 My Bids',        roles: ['freelancer'] },
-    { id: 'tabProfile', label: '👤 Profile',        roles: ['freelancer','client'] },
-  ];
-  tabs.innerHTML = '';
-  defs.filter(d => d.roles.includes(currentUser.role)).forEach(d => {
-    const btn = document.createElement('button');
-    btn.textContent = d.label;
-    btn.dataset.tab = d.id;
-    btn.onclick = () => switchTab(d.id);
-    tabs.appendChild(btn);
+/* ===== NAV ===== */
+function renderNav() {
+  const el = document.getElementById('nav-actions');
+  if (state.user) {
+    el.innerHTML = `
+      <div class="nav-user">
+        <strong>${esc(state.user.name)}</strong>
+        <span class="badge badge-${state.user.role}">${state.user.role}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">Dashboard</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    `;
+  } else {
+    el.innerHTML = `
+      <button class="btn btn-secondary btn-sm" onclick="openAuth('login')">Log In</button>
+      <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Sign Up</button>
+    `;
+  }
+  // Highlight active nav link
+  document.querySelectorAll('.nav-links button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === state.view);
   });
 }
 
-function switchTab(id) {
-  document.querySelectorAll('[id^="tab"]').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.remove('hidden');
-  const btn = document.querySelector(`.tabs button[data-tab="${id}"]`);
-  if (btn) btn.classList.add('active');
-  if (id === 'tabGigs') loadGigs();
-  if (id === 'tabJobs') loadJobs();
-  if (id === 'tabMyBids') loadMyBids();
-  if (id === 'tabProfile') loadProfile();
+/* ===== ROUTING ===== */
+function navigate(view, params = {}) {
+  state.view = view;
+  state.params = params;
+  renderNav();
+  render();
 }
 
-/* ── Gigs ───────────────────────────────────────────── */
-async function loadGigs() {
-  const cat = v('gigFilterCat'), max = v('gigFilterMax');
-  let qs = '?status=active';
-  if (cat) qs += `&category=${encodeURIComponent(cat)}`;
-  if (max) qs += `&maxPrice=${max}`;
-  const gigs = await api('GET', `/gigs${qs}`);
-  const el = document.getElementById('gigList');
-  if (!Array.isArray(gigs) || gigs.length === 0) {
-    el.innerHTML = '<p style="color:#718096;font-size:.85rem">No gigs found.</p>'; return;
+function render() {
+  const app = document.getElementById('app');
+  switch (state.view) {
+    case 'home':      renderHome(app); break;
+    case 'gigs':      renderGigList(app); break;
+    case 'jobs':      renderJobList(app); break;
+    case 'gig':       renderGigDetail(app); break;
+    case 'job':       renderJobDetail(app); break;
+    case 'create-gig': renderCreateGig(app); break;
+    case 'edit-gig':  renderEditGig(app); break;
+    case 'post-job':  renderPostJob(app); break;
+    case 'dashboard': renderDashboard(app); break;
+    case 'profile':   renderProfile(app); break;
+    default:          renderHome(app);
   }
-  el.innerHTML = gigs.map(g => `
-    <div class="list-card">
-      <h3>${esc(g.title)}</h3>
-      <div class="meta">${esc(g.category)} · ${g.deliveryDays}d delivery</div>
-      <p style="font-size:.82rem;color:#4a5568">${esc(g.description).slice(0,100)}${g.description.length>100?'…':''}</p>
-      <div class="price">$${g.priceUsd}</div>
-      <span class="badge badge-green">${g.status}</span>
-    </div>`).join('');
 }
 
-async function createGig() {
-  const body = {
-    title: v('gigTitle'), description: v('gigDesc'), category: v('gigCat'),
-    priceUsd: Number(v('gigPrice')), deliveryDays: Number(v('gigDays'))
+/* ===== API ===== */
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
   };
-  const res = await api('POST', '/gigs', body);
-  if (res.error) return showMsg('appMsg', res.error, true);
-  showMsg('appMsg', 'Gig created successfully!', false);
-  ['gigTitle','gigDesc','gigPrice','gigDays'].forEach(id => { document.getElementById(id).value = ''; });
-  switchTab('tabGigs');
+  if (state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch('/api' + path, opts);
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data && data.error) || `HTTP ${res.status}`);
+  return data;
 }
 
-/* ── Jobs ───────────────────────────────────────────── */
-async function loadJobs() {
-  const cat = v('jobFilterCat');
-  let qs = '?status=open';
-  if (cat) qs += `&category=${encodeURIComponent(cat)}`;
-  const jobs = await api('GET', `/jobs${qs}`);
-  const el = document.getElementById('jobList');
-  if (!Array.isArray(jobs) || jobs.length === 0) {
-    el.innerHTML = '<p style="color:#718096;font-size:.85rem">No open jobs found.</p>'; return;
+/* ===== AUTH ===== */
+function openAuth(tab) {
+  document.getElementById('auth-modal').classList.remove('hidden');
+  switchAuthTab(tab);
+}
+function closeAuth() {
+  document.getElementById('auth-modal').classList.add('hidden');
+}
+function switchAuthTab(tab) {
+  document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+async function doLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  errEl.classList.add('hidden');
+  try {
+    const data = await api('POST', '/users/login', {
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-password').value,
+    });
+    saveSession(data);
+    closeAuth();
+    navigate('dashboard');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Log In';
   }
-  el.innerHTML = jobs.map(j => `
-    <div class="list-card">
-      <h3>${esc(j.title)}</h3>
-      <div class="meta">${esc(j.category)}</div>
-      <p style="font-size:.82rem;color:#4a5568">${esc(j.description).slice(0,100)}${j.description.length>100?'…':''}</p>
-      <div class="price">Budget: $${j.budgetUsd}</div>
-      <span class="badge badge-blue">${j.status}</span>
-      <div class="actions">
-        ${currentUser.role === 'freelancer'
-          ? `<button class="btn btn-primary btn-sm" data-jobid="${esc(j.id)}" data-jobtitle="${esc(j.title)}" onclick="openBidModalFromBtn(this)">Place Bid</button>`
-          : ''}
+}
+async function doRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('register-btn');
+  const errEl = document.getElementById('register-error');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  errEl.classList.add('hidden');
+  try {
+    const data = await api('POST', '/users/register', {
+      name: document.getElementById('reg-name').value,
+      email: document.getElementById('reg-email').value,
+      password: document.getElementById('reg-password').value,
+      role: document.getElementById('reg-role').value,
+    });
+    saveSession(data);
+    closeAuth();
+    navigate('dashboard');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+function saveSession(data) {
+  state.token = data.token;
+  state.user = data.user;
+  localStorage.setItem('flh_token', data.token);
+  localStorage.setItem('flh_user', JSON.stringify(data.user));
+  renderNav();
+}
+function doLogout() {
+  state.token = null; state.user = null;
+  localStorage.removeItem('flh_token');
+  localStorage.removeItem('flh_user');
+  renderNav();
+  navigate('home');
+}
+
+/* ===== HOME ===== */
+function renderHome(app) {
+  app.innerHTML = `
+    <div class="hero">
+      <h1>Find Work. Get Work Done.</h1>
+      <p>Connect with talented freelancers or post a job to find the perfect professional for any project.</p>
+      <div class="hero-actions">
+        <button class="btn btn-white" onclick="navigate('gigs')">Browse Gigs</button>
+        <button class="btn btn-outline-white" onclick="navigate('jobs')">Browse Jobs</button>
+        ${!state.user ? `<button class="btn btn-white" onclick="openAuth('register')">Get Started Free</button>` : ''}
       </div>
-    </div>`).join('');
+    </div>
+    <div id="home-content">
+      <div class="loading">Loading featured gigs…</div>
+    </div>
+  `;
+  loadHomeContent();
 }
 
-async function createJob() {
-  const body = {
-    title: v('jobTitle'), description: v('jobDesc'), category: v('jobCat'),
-    budgetUsd: Number(v('jobBudget'))
-  };
-  const res = await api('POST', '/jobs', body);
-  if (res.error) return showMsg('appMsg', res.error, true);
-  showMsg('appMsg', 'Job posted successfully!', false);
-  ['jobTitle','jobDesc','jobBudget'].forEach(id => { document.getElementById(id).value = ''; });
-  switchTab('tabJobs');
+async function loadHomeContent() {
+  try {
+    const [gigs, jobs] = await Promise.all([
+      api('GET', '/gigs?status=active'),
+      api('GET', '/jobs?status=open'),
+    ]);
+    const el = document.getElementById('home-content');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="section-header">
+        <h2>Featured Gigs</h2>
+        <button class="btn btn-ghost btn-sm" onclick="navigate('gigs')">View All →</button>
+      </div>
+      <div class="grid" id="home-gigs">${renderGigCards(gigs.slice(0,6))}</div>
+      <hr style="margin:2.5rem 0"/>
+      <div class="section-header">
+        <h2>Open Jobs</h2>
+        <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')">View All →</button>
+      </div>
+      <div class="grid">${renderJobCards(jobs.slice(0,6))}</div>
+    `;
+  } catch (err) {
+    const el = document.getElementById('home-content');
+    if (el) el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
 }
 
-/* ── Bids ───────────────────────────────────────────── */
-function openBidModal(jobId, jobTitle) {
-  bidTargetJobId = jobId;
-  document.getElementById('bidJobTitle').value = jobTitle;
-  document.getElementById('bidAmount').value = '';
-  document.getElementById('bidMessage').value = '';
-  clearMsg('bidModalMsg');
-  document.getElementById('bidModal').classList.remove('hidden');
+/* ===== GIG LIST ===== */
+function renderGigList(app) {
+  app.innerHTML = `
+    <div class="section-header">
+      <h2>Browse Gigs</h2>
+      ${state.user && state.user.role === 'freelancer'
+        ? `<button class="btn btn-primary btn-sm" onclick="navigate('create-gig')">+ Create Gig</button>`
+        : ''}
+    </div>
+    <div class="filters">
+      <select id="filter-cat" onchange="loadGigs()">
+        <option value="">All Categories</option>
+        ${categoryOptions()}
+      </select>
+      <input type="number" id="filter-min" placeholder="Min price $" style="width:130px" onchange="loadGigs()" />
+      <input type="number" id="filter-max" placeholder="Max price $" style="width:130px" onchange="loadGigs()" />
+    </div>
+    <div id="gig-list-content"><div class="loading">Loading…</div></div>
+  `;
+  loadGigs();
 }
-function openBidModalFromBtn(btn) {
-  openBidModal(btn.dataset.jobid, btn.dataset.jobtitle);
-}
-function closeBidModal() { document.getElementById('bidModal').classList.add('hidden'); }
 
-async function submitBid() {
-  const body = { jobId: bidTargetJobId, amountUsd: Number(v('bidAmount')), message: v('bidMessage') };
-  const res = await api('POST', '/bids', body);
-  if (res.error) return showMsg('bidModalMsg', res.error, true);
-  showMsg('bidModalMsg', 'Bid placed!', false);
-  setTimeout(closeBidModal, 1200);
+async function loadGigs() {
+  const cat = document.getElementById('filter-cat').value;
+  const min = document.getElementById('filter-min').value;
+  const max = document.getElementById('filter-max').value;
+  let url = '/gigs?status=active';
+  if (cat) url += `&category=${encodeURIComponent(cat)}`;
+  if (min) url += `&minPrice=${min}`;
+  if (max) url += `&maxPrice=${max}`;
+  const el = document.getElementById('gig-list-content');
+  if (!el) return;
+  el.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const gigs = await api('GET', url);
+    el.innerHTML = gigs.length
+      ? `<div class="grid">${renderGigCards(gigs)}</div>`
+      : emptyState('📦', 'No gigs found', 'Try adjusting your filters.');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function renderGigCards(gigs) {
+  return gigs.map(g => `
+    <div class="card" onclick="navigate('gig', {id:'${g.id}'})">
+      <div class="card-header">
+        <h3>${esc(g.title)}</h3>
+        <span class="status-badge status-${g.status}">${g.status}</span>
+      </div>
+      <p>${esc(g.description)}</p>
+      <div class="card-footer">
+        <span class="price">$${g.priceUsd}</span>
+        <span class="cat-tag">${esc(g.category)}</span>
+        <span class="meta">⏱ ${g.deliveryDays}d</span>
+      </div>
+    </div>
+  `).join('') || emptyState('📦', 'No gigs found', '');
+}
+
+/* ===== JOB LIST ===== */
+function renderJobList(app) {
+  app.innerHTML = `
+    <div class="section-header">
+      <h2>Browse Jobs</h2>
+      ${state.user && state.user.role === 'client'
+        ? `<button class="btn btn-primary btn-sm" onclick="navigate('post-job')">+ Post Job</button>`
+        : ''}
+    </div>
+    <div class="filters">
+      <select id="filter-job-cat" onchange="loadJobs()">
+        <option value="">All Categories</option>
+        ${categoryOptions()}
+      </select>
+    </div>
+    <div id="job-list-content"><div class="loading">Loading…</div></div>
+  `;
+  loadJobs();
+}
+
+async function loadJobs() {
+  const cat = document.getElementById('filter-job-cat').value;
+  let url = '/jobs?status=open';
+  if (cat) url += `&category=${encodeURIComponent(cat)}`;
+  const el = document.getElementById('job-list-content');
+  if (!el) return;
+  el.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const jobs = await api('GET', url);
+    el.innerHTML = jobs.length
+      ? `<div class="grid">${renderJobCards(jobs)}</div>`
+      : emptyState('💼', 'No open jobs found', 'Try adjusting your filters.');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function renderJobCards(jobs) {
+  return jobs.map(j => `
+    <div class="card" onclick="navigate('job', {id:'${j.id}'})">
+      <div class="card-header">
+        <h3>${esc(j.title)}</h3>
+        <span class="status-badge status-${j.status}">${j.status}</span>
+      </div>
+      <p>${esc(j.description)}</p>
+      <div class="card-footer">
+        <span class="price price-budget">Budget: $${j.budgetUsd}</span>
+        <span class="cat-tag">${esc(j.category)}</span>
+      </div>
+    </div>
+  `).join('') || emptyState('💼', 'No jobs found', '');
+}
+
+/* ===== GIG DETAIL ===== */
+async function renderGigDetail(app) {
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const gig = await api('GET', `/gigs/${state.params.id}`);
+    const isOwner = state.user && state.user.id === gig.freelancerId;
+    const isClient = state.user && state.user.role === 'client';
+
+    app.innerHTML = `
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('gigs')">← Back to Gigs</button>
+      </div>
+      <div class="detail-page">
+        <div>
+          <div class="detail-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
+              <span class="cat-tag">${esc(gig.category)}</span>
+              <span class="status-badge status-${gig.status}">${gig.status}</span>
+            </div>
+            <h1 class="detail-title">${esc(gig.title)}</h1>
+            <div class="detail-meta">
+              <span>⏱ Delivery: ${gig.deliveryDays} day${gig.deliveryDays !== 1 ? 's' : ''}</span>
+              <span>🗓 Posted ${formatDate(gig.createdAt)}</span>
+            </div>
+            <div class="detail-body">${esc(gig.description)}</div>
+            ${isOwner ? `
+              <div style="display:flex;gap:.75rem">
+                <button class="btn btn-secondary btn-sm" onclick="navigate('edit-gig',{id:'${gig.id}'})">Edit Gig</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteGig('${gig.id}')">Delete</button>
+              </div>
+            ` : ''}
+          </div>
+          <div id="gig-reviews" style="margin-top:1.5rem"><div class="loading">Loading reviews…</div></div>
+        </div>
+        <div class="detail-sidebar">
+          <div class="sidebar-card">
+            <h4>Pricing</h4>
+            <div class="sidebar-price">$${gig.priceUsd}</div>
+            <div class="sidebar-meta" style="margin-top:.25rem">Delivery in ${gig.deliveryDays} day${gig.deliveryDays !== 1 ? 's' : ''}</div>
+            ${isClient && gig.status === 'active' ? `
+              <button class="btn btn-primary" onclick="showOrderModal('${gig.id}','${esc(gig.title)}',${gig.priceUsd})">Order Now</button>
+            ` : !state.user ? `
+              <button class="btn btn-secondary" onclick="openAuth('register')">Sign up to Order</button>
+            ` : ''}
+          </div>
+          <div class="sidebar-card">
+            <h4>Leave a Review</h4>
+            ${state.user ? renderReviewFormInline('gig', gig.id, gig.freelancerId) : `<p style="font-size:.85rem;color:var(--text-muted)"><a href="#" onclick="openAuth('login')">Log in</a> to leave a review.</p>`}
+          </div>
+        </div>
+      </div>
+      ${isClient ? orderModal() : ''}
+    `;
+    loadGigReviews(gig.id);
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function orderModal() {
+  return `
+    <div class="modal-overlay hidden" id="order-modal">
+      <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('order-modal').classList.add('hidden')">✕</button>
+        <h2>Place Order</h2>
+        <p id="order-gig-name"></p>
+        <div class="sidebar-price" id="order-price"></div>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-top:.5rem">A payment intent will be created. (9% platform fee applies)</p>
+        <div id="order-result" class="hidden" style="margin-top:1rem"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="doOrder()">Confirm Order</button>
+      </div>
+    </div>
+  `;
+}
+
+function showOrderModal(gigId, title, price) {
+  const modal = document.getElementById('order-modal');
+  modal.classList.remove('hidden');
+  modal.addEventListener('click', function handler(e) {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      modal.removeEventListener('click', handler);
+    }
+  });
+  document.getElementById('order-gig-name').textContent = title;
+  document.getElementById('order-price').textContent = `$${price}`;
+  document.getElementById('order-modal').dataset.amount = price;
+}
+
+async function doOrder() {
+  const modal = document.getElementById('order-modal');
+  const resultEl = document.getElementById('order-result');
+  const amount = parseFloat(modal.dataset.amount);
+  resultEl.className = 'hidden';
+  try {
+    const data = await api('POST', '/payments/intent', { amountUsd: amount });
+    resultEl.innerHTML = `
+      <div class="alert alert-success">
+        ✅ Payment intent created!<br/>
+        <small>Platform fee: $${data.platformFeeUsd} | Freelancer payout: $${data.freelancerPayoutUsd}</small>
+      </div>
+    `;
+    resultEl.classList.remove('hidden');
+  } catch (err) {
+    resultEl.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+    resultEl.classList.remove('hidden');
+  }
+}
+
+async function deleteGig(id) {
+  if (!confirm('Delete this gig?')) return;
+  try {
+    await api('DELETE', `/gigs/${id}`);
+    navigate('dashboard');
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function loadGigReviews(gigId) {
+  const el = document.getElementById('gig-reviews');
+  if (!el) return;
+  try {
+    const reviews = await api('GET', `/reviews/gig/${gigId}`);
+    el.innerHTML = `
+      <div class="detail-card">
+        <h3 style="margin-bottom:1rem">Reviews (${reviews.length})</h3>
+        ${reviews.length ? reviews.map(renderReview).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No reviews yet.</p>'}
+      </div>
+    `;
+  } catch {
+    el.innerHTML = '';
+  }
+}
+
+/* ===== JOB DETAIL ===== */
+async function renderJobDetail(app) {
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const job = await api('GET', `/jobs/${state.params.id}`);
+    const isOwner = state.user && state.user.id === job.clientId;
+    const isFreelancer = state.user && state.user.role === 'freelancer';
+
+    app.innerHTML = `
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('jobs')">← Back to Jobs</button>
+      </div>
+      <div class="detail-page">
+        <div>
+          <div class="detail-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
+              <span class="cat-tag">${esc(job.category)}</span>
+              <span class="status-badge status-${job.status}">${job.status}</span>
+            </div>
+            <h1 class="detail-title">${esc(job.title)}</h1>
+            <div class="detail-meta">
+              <span>💰 Budget: $${job.budgetUsd}</span>
+              <span>🗓 Posted ${formatDate(job.createdAt)}</span>
+            </div>
+            <div class="detail-body">${esc(job.description)}</div>
+            ${isOwner ? `
+              <button class="btn btn-danger btn-sm" onclick="cancelJob('${job.id}')">Cancel Job</button>
+            ` : ''}
+          </div>
+
+          <div id="bids-section" style="margin-top:1.5rem">
+            <div class="loading">Loading bids…</div>
+          </div>
+        </div>
+        <div class="detail-sidebar">
+          <div class="sidebar-card">
+            <h4>Job Details</h4>
+            <div class="sidebar-meta">Budget</div>
+            <div class="sidebar-price price-budget">$${job.budgetUsd}</div>
+            <div class="sidebar-meta" style="margin-top:.75rem">Category: ${esc(job.category)}</div>
+            <div class="sidebar-meta">Status: ${job.status}</div>
+          </div>
+          ${isFreelancer && job.status === 'open' ? `
+            <div class="sidebar-card">
+              <h4>Submit a Bid</h4>
+              <form onsubmit="submitBid(event,'${job.id}')">
+                <div class="form-group">
+                  <label>Your Bid ($)</label>
+                  <input type="number" id="bid-amount" placeholder="e.g. 250" min="1" step="0.01" required />
+                </div>
+                <div class="form-group">
+                  <label>Message</label>
+                  <textarea id="bid-message" placeholder="Describe your approach…" required style="min-height:80px"></textarea>
+                </div>
+                <div id="bid-error" class="alert alert-error hidden"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="bid-btn">Submit Bid</button>
+              </form>
+            </div>
+          ` : !state.user ? `
+            <div class="sidebar-card">
+              <p style="font-size:.875rem;color:var(--text-muted)"><a href="#" onclick="openAuth('register')">Sign up as freelancer</a> to submit bids.</p>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+    loadBids(job.id, isOwner);
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function loadBids(jobId, isOwner) {
+  const el = document.getElementById('bids-section');
+  if (!el) return;
+  try {
+    const bids = await api('GET', `/bids/job/${jobId}`);
+    el.innerHTML = `
+      <div class="detail-card">
+        <h3 style="margin-bottom:1rem">Bids (${bids.length})</h3>
+        ${bids.length ? bids.map(b => renderBidItem(b, isOwner)).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No bids yet.</p>'}
+      </div>
+    `;
+  } catch {
+    el.innerHTML = '<div class="alert alert-error">Could not load bids.</div>';
+  }
+}
+
+function renderBidItem(bid, isOwner) {
+  return `
+    <div class="bid-item">
+      <div class="bid-body">
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+          <span class="bid-amount">$${bid.amountUsd}</span>
+          <span class="status-badge status-${bid.status}">${bid.status}</span>
+        </div>
+        <div class="bid-message">${esc(bid.message)}</div>
+        <div class="bid-meta">${formatDate(bid.createdAt)}</div>
+      </div>
+      ${isOwner && bid.status === 'pending' ? `
+        <div class="bid-actions">
+          <button class="btn btn-success btn-sm" onclick="acceptBid('${bid.id}','${bid.jobId}')">Accept</button>
+          <button class="btn btn-secondary btn-sm" onclick="rejectBid('${bid.id}','${bid.jobId}')">Reject</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function submitBid(e, jobId) {
+  e.preventDefault();
+  const btn = document.getElementById('bid-btn');
+  const errEl = document.getElementById('bid-error');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  errEl.classList.add('hidden');
+  try {
+    await api('POST', '/bids', {
+      jobId,
+      amountUsd: parseFloat(document.getElementById('bid-amount').value),
+      message: document.getElementById('bid-message').value,
+    });
+    document.getElementById('bid-amount').value = '';
+    document.getElementById('bid-message').value = '';
+    loadBids(jobId, false);
+    showToast('Bid submitted!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Submit Bid';
+  }
+}
+
+async function acceptBid(bidId, jobId) {
+  if (!confirm('Accept this bid? All other bids will be rejected.')) return;
+  try {
+    await api('PUT', `/bids/${bidId}/accept`);
+    loadBids(jobId, true);
+    showToast('Bid accepted!');
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function rejectBid(bidId, jobId) {
+  try {
+    await api('PUT', `/bids/${bidId}/reject`);
+    loadBids(jobId, true);
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function cancelJob(id) {
+  if (!confirm('Cancel this job?')) return;
+  try {
+    await api('DELETE', `/jobs/${id}`);
+    navigate('dashboard');
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+/* ===== CREATE GIG ===== */
+function renderCreateGig(app) {
+  if (!state.user || state.user.role !== 'freelancer') {
+    app.innerHTML = `<div class="alert alert-error">Only freelancers can create gigs.</div>`;
+    return;
+  }
+  app.innerHTML = `
+    <div class="form-page">
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
+      </div>
+      <div class="form-card">
+        <h2>Create a New Gig</h2>
+        <form onsubmit="doCreateGig(event)">
+          <div class="form-group">
+            <label>Gig Title</label>
+            <input type="text" id="gig-title" placeholder="I will design a professional logo…" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="gig-desc" placeholder="Describe what you offer…" style="min-height:120px" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="gig-cat">
+                ${categoryOptions()}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Price (USD)</label>
+              <input type="number" id="gig-price" placeholder="50" min="1" step="0.01" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Delivery Days</label>
+            <input type="number" id="gig-days" placeholder="3" min="1" required />
+          </div>
+          <div id="create-gig-error" class="alert alert-error hidden"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="create-gig-btn">Publish Gig</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+async function doCreateGig(e) {
+  e.preventDefault();
+  const btn = document.getElementById('create-gig-btn');
+  const errEl = document.getElementById('create-gig-error');
+  btn.disabled = true; btn.textContent = 'Publishing…';
+  errEl.classList.add('hidden');
+  try {
+    await api('POST', '/gigs', {
+      title: document.getElementById('gig-title').value,
+      description: document.getElementById('gig-desc').value,
+      category: document.getElementById('gig-cat').value,
+      priceUsd: parseFloat(document.getElementById('gig-price').value),
+      deliveryDays: parseInt(document.getElementById('gig-days').value),
+    });
+    navigate('dashboard');
+    showToast('Gig published!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Publish Gig';
+  }
+}
+
+/* ===== EDIT GIG ===== */
+async function renderEditGig(app) {
+  if (!state.user || state.user.role !== 'freelancer') {
+    app.innerHTML = `<div class="alert alert-error">Only freelancers can edit gigs.</div>`;
+    return;
+  }
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const gig = await api('GET', `/gigs/${state.params.id}`);
+    if (gig.freelancerId !== state.user.id) {
+      app.innerHTML = `<div class="alert alert-error">You are not authorized to edit this gig.</div>`;
+      return;
+    }
+    app.innerHTML = `
+      <div class="form-page">
+        <div style="margin-bottom:1rem">
+          <button class="btn btn-secondary btn-sm" onclick="navigate('gig',{id:'${gig.id}'})">← Back to Gig</button>
+        </div>
+        <div class="form-card">
+          <h2>Edit Gig</h2>
+          <form onsubmit="doEditGig(event,'${gig.id}')">
+            <div class="form-group">
+              <label>Gig Title</label>
+              <input type="text" id="edit-gig-title" placeholder="I will design a professional logo…" value="${esc(gig.title)}" required />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="edit-gig-desc" placeholder="Describe what you offer…" style="min-height:120px" required>${esc(gig.description)}</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="edit-gig-cat">
+                  ${categoryOptions(gig.category)}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Price (USD)</label>
+                <input type="number" id="edit-gig-price" placeholder="50" min="1" step="0.01" value="${gig.priceUsd}" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Delivery Days</label>
+                <input type="number" id="edit-gig-days" placeholder="3" min="1" value="${gig.deliveryDays}" required />
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="edit-gig-status">
+                  <option value="active" ${gig.status === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="paused" ${gig.status === 'paused' ? 'selected' : ''}>Paused</option>
+                </select>
+              </div>
+            </div>
+            <div id="edit-gig-error" class="alert alert-error hidden"></div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="navigate('gig',{id:'${gig.id}'})">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="edit-gig-btn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function doEditGig(e, gigId) {
+  e.preventDefault();
+  const btn = document.getElementById('edit-gig-btn');
+  const errEl = document.getElementById('edit-gig-error');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  errEl.classList.add('hidden');
+  try {
+    await api('PUT', `/gigs/${gigId}`, {
+      title: document.getElementById('edit-gig-title').value,
+      description: document.getElementById('edit-gig-desc').value,
+      category: document.getElementById('edit-gig-cat').value,
+      priceUsd: parseFloat(document.getElementById('edit-gig-price').value),
+      deliveryDays: parseInt(document.getElementById('edit-gig-days').value),
+      status: document.getElementById('edit-gig-status').value,
+    });
+    navigate('gig', { id: gigId });
+    showToast('Gig updated!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
+/* ===== POST JOB ===== */
+function renderPostJob(app) {
+  if (!state.user || state.user.role !== 'client') {
+    app.innerHTML = `<div class="alert alert-error">Only clients can post jobs.</div>`;
+    return;
+  }
+  app.innerHTML = `
+    <div class="form-page">
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
+      </div>
+      <div class="form-card">
+        <h2>Post a New Job</h2>
+        <form onsubmit="doPostJob(event)">
+          <div class="form-group">
+            <label>Job Title</label>
+            <input type="text" id="job-title" placeholder="Build a REST API for my app…" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="job-desc" placeholder="Describe the work in detail…" style="min-height:120px" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="job-cat">
+                ${categoryOptions()}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Budget (USD)</label>
+              <input type="number" id="job-budget" placeholder="500" min="1" step="0.01" required />
+            </div>
+          </div>
+          <div id="post-job-error" class="alert alert-error hidden"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="post-job-btn">Post Job</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+async function doPostJob(e) {
+  e.preventDefault();
+  const btn = document.getElementById('post-job-btn');
+  const errEl = document.getElementById('post-job-error');
+  btn.disabled = true; btn.textContent = 'Posting…';
+  errEl.classList.add('hidden');
+  try {
+    await api('POST', '/jobs', {
+      title: document.getElementById('job-title').value,
+      description: document.getElementById('job-desc').value,
+      category: document.getElementById('job-cat').value,
+      budgetUsd: parseFloat(document.getElementById('job-budget').value),
+    });
+    navigate('dashboard');
+    showToast('Job posted!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Post Job';
+  }
+}
+
+/* ===== DASHBOARD ===== */
+async function renderDashboard(app) {
+  if (!state.user) {
+    openAuth('login');
+    navigate('home');
+    return;
+  }
+  app.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">${state.user.name[0].toUpperCase()}</div>
+      <div class="profile-info">
+        <h2>${esc(state.user.name)}</h2>
+        <p>${esc(state.user.email)} · <span class="badge badge-${state.user.role}">${state.user.role}</span></p>
+      </div>
+      ${state.user.role === 'freelancer'
+        ? `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-gig')">+ Create Gig</button>`
+        : `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('post-job')">+ Post Job</button>`
+      }
+    </div>
+    ${state.user.role === 'freelancer' ? renderFreelancerDashboard() : renderClientDashboard()}
+  `;
+  if (state.user.role === 'freelancer') {
+    loadMyGigs();
+    loadMyBids();
+  } else {
+    loadMyJobs();
+  }
+}
+
+function renderFreelancerDashboard() {
+  return `
+    <div class="tabs">
+      <button class="tab active" id="tab-my-gigs" onclick="switchDashTab('my-gigs')">My Gigs</button>
+      <button class="tab" id="tab-my-bids" onclick="switchDashTab('my-bids')">My Bids</button>
+    </div>
+    <div id="dash-my-gigs"><div class="loading">Loading…</div></div>
+    <div id="dash-my-bids" class="hidden"><div class="loading">Loading…</div></div>
+  `;
+}
+
+function renderClientDashboard() {
+  return `
+    <div id="dash-my-jobs"><div class="loading">Loading your jobs…</div></div>
+  `;
+}
+
+function switchDashTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+  ['my-gigs', 'my-bids'].forEach(id => {
+    document.getElementById(`dash-${id}`)?.classList.toggle('hidden', id !== tab);
+  });
+}
+
+async function loadMyGigs() {
+  const el = document.getElementById('dash-my-gigs');
+  if (!el) return;
+  try {
+    // Fetch all active gigs and filter by owner
+    const gigs = await api('GET', '/gigs?status=active');
+    const mine = gigs.filter(g => g.freelancerId === state.user.id);
+    // Also fetch deleted ones by looking at the user's profile
+    if (!mine.length) {
+      el.innerHTML = `
+        ${emptyState('📦', 'No gigs yet', 'Create your first gig to start earning.')}
+        <div style="text-align:center;margin-top:1rem">
+          <button class="btn btn-primary" onclick="navigate('create-gig')">Create Your First Gig</button>
+        </div>
+      `;
+    } else {
+      el.innerHTML = `<div class="grid">${renderMyGigCards(mine)}</div>`;
+    }
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function renderMyGigCards(gigs) {
+  return gigs.map(g => `
+    <div class="card" onclick="navigate('gig',{id:'${g.id}'})">
+      <div class="card-header">
+        <h3>${esc(g.title)}</h3>
+        <span class="status-badge status-${g.status}">${g.status}</span>
+      </div>
+      <p>${esc(g.description)}</p>
+      <div class="card-footer">
+        <span class="price">$${g.priceUsd}</span>
+        <span class="cat-tag">${esc(g.category)}</span>
+        <span class="meta">⏱ ${g.deliveryDays}d</span>
+      </div>
+    </div>
+  `).join('');
 }
 
 async function loadMyBids() {
-  const res = await api('GET', `/bids/freelancer/${currentUser.id}`);
-  const el = document.getElementById('myBidList');
-  if (!Array.isArray(res) || res.length === 0) {
-    el.innerHTML = '<p style="color:#718096;font-size:.85rem">No bids yet.</p>'; return;
-  }
-  el.innerHTML = res.map(b => `
-    <div class="list-card">
-      <div class="meta">Job ID: ${esc(b.jobId)}</div>
-      <div class="price">$${b.amountUsd}</div>
-      <p style="font-size:.82rem;color:#4a5568">${esc(b.message).slice(0,100)}</p>
-      <span class="badge badge-yellow">${b.status}</span>
-    </div>`).join('');
-}
-
-/* ── Profile ────────────────────────────────────────── */
-async function loadProfile() {
-  const res = await api('GET', `/users/${currentUser.id}`);
-  const el = document.getElementById('profileInfo');
-  if (res.error) { el.innerHTML = `<p class="alert alert-error">${res.error}</p>`; return; }
-  el.innerHTML = `
-    <div class="form-group"><label>Name</label><input value="${esc(res.name)}" readonly /></div>
-    <div class="form-group"><label>Email</label><input value="${esc(res.email)}" readonly /></div>
-    <div class="form-group"><label>Role</label><input value="${esc(res.role)}" readonly /></div>
-    <div class="form-group"><label>Member since</label><input value="${new Date(res.createdAt).toLocaleDateString()}" readonly /></div>`;
-}
-
-/* ── Utilities ──────────────────────────────────────── */
-async function api(method, path, body) {
-  try {
-    const opts = { method, headers: { 'Content-Type': 'application/json' } };
-    if (token) opts.headers['Authorization'] = `Bearer ${token}`;
-    if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(API + path, opts);
-    return await r.json();
-  } catch (e) { return { error: e.message }; }
-}
-
-function v(id) { return document.getElementById(id)?.value ?? ''; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function clearMsg(id) { const el = document.getElementById(id); if (el) el.innerHTML = ''; }
-function showMsg(id, msg, isError) {
-  const el = document.getElementById(id);
+  const el = document.getElementById('dash-my-bids');
   if (!el) return;
-  el.innerHTML = `<div class="alert ${isError ? 'alert-error' : 'alert-success'}">${esc(msg)}</div>`;
-  if (!isError) setTimeout(() => { el.innerHTML = ''; }, 3000);
+  try {
+    const bids = await api('GET', '/bids/my');
+    if (!bids.length) {
+      el.innerHTML = emptyState('📝', 'No bids yet', 'Browse open jobs and place your first bid.');
+      return;
+    }
+    el.innerHTML = bids.map(b => `
+      <div class="bid-item" onclick="navigate('job',{id:'${b.jobId}'})" style="cursor:pointer">
+        <div class="bid-body">
+          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <span class="bid-amount">$${b.amountUsd}</span>
+            <span class="status-badge status-${b.status}">${b.status}</span>
+          </div>
+          <div class="bid-message">${esc(b.message)}</div>
+          <div class="bid-meta">Job ID: ${b.jobId} · ${formatDate(b.createdAt)}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
 }
 
-/* ── Init ───────────────────────────────────────────── */
-if (token && currentUser) {
-  initApp();
+async function loadMyJobs() {
+  const el = document.getElementById('dash-my-jobs');
+  if (!el) return;
+  try {
+    const [open, inProg] = await Promise.all([
+      api('GET', '/jobs?status=open'),
+      api('GET', '/jobs?status=in_progress'),
+    ]);
+    const allJobs = [...open, ...inProg].filter(j => j.clientId === state.user.id);
+    if (!allJobs.length) {
+      el.innerHTML = `
+        ${emptyState('💼', 'No jobs posted yet', 'Post a job to find talented freelancers.')}
+        <div style="text-align:center;margin-top:1rem">
+          <button class="btn btn-primary" onclick="navigate('post-job')">Post Your First Job</button>
+        </div>
+      `;
+      return;
+    }
+    el.innerHTML = `
+      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">My Jobs</h3>
+      <div class="grid">${allJobs.map(j => `
+        <div class="card" onclick="navigate('job',{id:'${j.id}'})">
+          <div class="card-header">
+            <h3>${esc(j.title)}</h3>
+            <span class="status-badge status-${j.status}">${j.status}</span>
+          </div>
+          <p>${esc(j.description)}</p>
+          <div class="card-footer">
+            <span class="price price-budget">$${j.budgetUsd}</span>
+            <span class="cat-tag">${esc(j.category)}</span>
+          </div>
+        </div>
+      `).join('')}</div>
+    `;
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
 }
+
+/* ===== PROFILE ===== */
+async function renderProfile(app) {
+  const userId = state.params.id;
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const reviews = await api('GET', `/reviews/user/${userId}`);
+    const avgRating = reviews.length
+      ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+      : null;
+    app.innerHTML = `
+      <div class="detail-card" style="margin-bottom:1.5rem">
+        <div class="profile-header">
+          <div class="profile-avatar">${userId[0].toUpperCase()}</div>
+          <div class="profile-info">
+            <h2>User Profile</h2>
+            ${avgRating ? `<p>⭐ ${avgRating} avg rating (${reviews.length} reviews)</p>` : '<p>No reviews yet</p>'}
+          </div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <h3 style="margin-bottom:1rem">Reviews (${reviews.length})</h3>
+        ${reviews.length ? reviews.map(renderReview).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No reviews yet.</p>'}
+      </div>
+    `;
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+/* ===== REVIEWS ===== */
+function renderReviewFormInline(type, refId, revieweeId) {
+  const formId = `review-form-${refId}`;
+  return `
+    <form id="${formId}" onsubmit="submitReview(event,'${formId}','${revieweeId}','${type}','${refId}')">
+      <div class="form-group">
+        <label style="font-size:.8rem">Rating</label>
+        <div class="star-input" id="stars-${refId}">
+          ${[1,2,3,4,5].map(i => `<span data-val="${i}" onclick="setStars('${refId}',${i})">☆</span>`).join('')}
+        </div>
+        <input type="hidden" id="rating-val-${refId}" value="0" />
+      </div>
+      <div class="form-group">
+        <textarea placeholder="Write your review…" id="review-comment-${refId}" style="min-height:70px;font-size:.85rem" required></textarea>
+      </div>
+      <div id="review-err-${refId}" class="alert alert-error hidden"></div>
+      <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">Submit Review</button>
+    </form>
+  `;
+}
+
+function setStars(refId, val) {
+  document.getElementById(`rating-val-${refId}`).value = val;
+  document.querySelectorAll(`#stars-${refId} span`).forEach(s => {
+    s.textContent = parseInt(s.dataset.val) <= val ? '★' : '☆';
+    s.classList.toggle('filled', parseInt(s.dataset.val) <= val);
+  });
+}
+
+async function submitReview(e, formId, revieweeId, type, refId) {
+  e.preventDefault();
+  const rating = parseInt(document.getElementById(`rating-val-${refId}`).value);
+  const comment = document.getElementById(`review-comment-${refId}`).value;
+  const errEl = document.getElementById(`review-err-${refId}`);
+  errEl.classList.add('hidden');
+  if (!rating) { errEl.textContent = 'Please select a rating.'; errEl.classList.remove('hidden'); return; }
+  try {
+    const body = { revieweeId, rating, comment };
+    if (type === 'gig') body.gigId = refId;
+    if (type === 'job') body.jobId = refId;
+    await api('POST', '/reviews', body);
+    document.getElementById(formId).innerHTML = '<div class="alert alert-success">Review submitted! ✅</div>';
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+function renderReview(r) {
+  const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+  return `
+    <div class="review-item">
+      <div class="review-header">
+        <span class="stars">${stars}</span>
+        <span class="meta">${formatDate(r.createdAt)}</span>
+      </div>
+      <div class="review-comment">${esc(r.comment)}</div>
+    </div>
+  `;
+}
+
+/* ===== HELPERS ===== */
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function emptyState(icon, title, msg) {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><h3>${title}</h3><p>${msg}</p></div>`;
+}
+
+function categoryOptions(selected) {
+  const cats = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Music', 'Business', 'Data', 'Other'];
+  return cats.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1f2937;color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease';
+  t.textContent = '✓ ' + msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// Close modal on overlay click
+document.getElementById('auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
 </script>
 </body>
 </html>
