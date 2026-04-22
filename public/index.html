@@ -343,12 +343,19 @@ function renderNav() {
 }
 
 function buildNavLinks() {
-  const truckingUser = state.user && ['shipper', 'carrier', 'driver', 'admin'].includes(state.user.role);
-  const links = [
-    `<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`,
-    `<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`,
-  ];
-  if (!state.user || truckingUser) {
+  const role = state.user?.role;
+  const links = [];
+  if (!role) {
+    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
+    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
+    links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
+    return links.join('');
+  }
+  if (['freelancer', 'client'].includes(role)) {
+    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
+    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
+  }
+  if (['shipper', 'carrier', 'driver', 'admin'].includes(role)) {
     links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
   }
   return links.join('');
@@ -674,7 +681,7 @@ async function loadLoads() {
 
 function renderLoadCards(loads) {
   return loads.map(l => `
-    <div class="card" onclick="navigate('load',{id:'${l.id}'})">
+    <div class="card" onclick="navigate('load',{id:'${encodeURIComponent(l.id)}'})">
       <div class="card-header">
         <h3>${esc(l.title)}</h3>
         <span class="status-badge status-${l.status}">${l.status}</span>
@@ -724,7 +731,7 @@ async function renderLoadDetail(app) {
               <span>🗓 Posted ${formatDate(load.createdAt)}</span>
             </div>
             <div class="detail-body">${esc(load.description)}</div>
-            ${(isOwner && load.status === 'open') ? `<button class="btn btn-danger btn-sm" onclick="cancelLoad('${load.id}')">Cancel Load</button>` : ''}
+            ${(isOwner && load.status === 'open') ? `<button class="btn btn-danger btn-sm" onclick="cancelLoad('${encodeURIComponent(load.id)}')">Cancel Load</button>` : ''}
           </div>
           ${state.user ? `
             <div class="detail-card" style="margin-top:1.5rem">
@@ -757,7 +764,7 @@ async function renderLoadDetail(app) {
                     <div class="bid-meta">Platform fee $${inv.platformFeeUsd} · Carrier payout $${inv.carrierPayoutUsd}</div>
                   </div>
                   ${state.user && state.user.role === 'shipper' && inv.shipperId === state.user.id && inv.status !== 'paid'
-                    ? `<div class="bid-actions"><button class="btn btn-primary btn-sm" onclick="payInvoice('${inv.id}')">Pay</button></div>`
+                    ? `<div class="bid-actions"><button class="btn btn-primary btn-sm" onclick="payInvoice('${encodeURIComponent(inv.id)}')">Pay</button></div>`
                     : ''}
                 </div>
               `).join('')}
@@ -770,7 +777,7 @@ async function renderLoadDetail(app) {
             ? renderDispatchForm(load.id, acceptedQuote.id)
             : ''}
           ${state.user && state.user.role === 'carrier' && shipment && shipment.status === 'delivered' && !invoices.length
-            ? `<div class="sidebar-card"><h4>Billing</h4><button class="btn btn-primary" onclick="createInvoice('${shipment.id}')">Generate Invoice</button></div>`
+            ? `<div class="sidebar-card"><h4>Billing</h4><button class="btn btn-primary" onclick="createInvoice('${encodeURIComponent(shipment.id)}')">Generate Invoice</button></div>`
             : ''}
           ${!state.user ? `<div class="sidebar-card"><p style="font-size:.875rem;color:var(--text-muted)"><a href="#" onclick="openAuth('login')">Log in</a> to quote or track loads.</p></div>` : ''}
         </div>
@@ -791,12 +798,12 @@ function renderQuoteItems(quotes, isOwner) {
           <span class="status-badge status-${q.status}">${q.status}</span>
         </div>
         <div class="bid-message">${esc(q.message)}</div>
-        <div class="bid-meta">Carrier: ${esc(q.carrierId)} · ETA ${q.estimatedDays} day${q.estimatedDays !== 1 ? 's' : ''}</div>
+        <div class="bid-meta">Carrier ID: ${esc(q.carrierId)} · ETA ${q.estimatedDays} day${q.estimatedDays !== 1 ? 's' : ''}</div>
       </div>
       ${isOwner && q.status === 'pending' ? `
         <div class="bid-actions">
-          <button class="btn btn-success btn-sm" onclick="acceptQuote('${q.id}')">Accept</button>
-          <button class="btn btn-secondary btn-sm" onclick="rejectQuote('${q.id}')">Reject</button>
+          <button class="btn btn-success btn-sm" onclick="acceptQuote('${encodeURIComponent(q.id)}')">Accept</button>
+          <button class="btn btn-secondary btn-sm" onclick="rejectQuote('${encodeURIComponent(q.id)}')">Reject</button>
         </div>
       ` : ''}
     </div>
@@ -960,6 +967,7 @@ async function acceptQuote(id) {
 async function rejectQuote(id) {
   try {
     await api('PUT', `/quotes/${id}/reject`);
+    showToast('Quote rejected');
     navigate('load', { id: state.params.id });
   } catch (err) {
     alert('Error: ' + err.message);
@@ -1644,7 +1652,7 @@ function loadDashboardData() {
     return;
   }
   if (state.user.role === 'driver') {
-    loadDriverHelper();
+    return;
   }
 }
 
@@ -1654,8 +1662,8 @@ function renderFreelancerDashboard() {
       <button class="tab active" id="tab-my-gigs" onclick="switchDashTab('my-gigs')">My Gigs</button>
       <button class="tab" id="tab-my-bids" onclick="switchDashTab('my-bids')">My Bids</button>
     </div>
-    <div id="dash-my-gigs"><div class="loading">Loading…</div></div>
-    <div id="dash-my-bids" class="hidden"><div class="loading">Loading…</div></div>
+    <div id="dash-my-gigs" class="dash-panel"><div class="loading">Loading…</div></div>
+    <div id="dash-my-bids" class="dash-panel hidden"><div class="loading">Loading…</div></div>
   `;
 }
 
@@ -1671,8 +1679,8 @@ function renderShipperDashboard() {
       <button class="tab active" id="tab-my-loads" onclick="switchDashTab('my-loads')">My Loads</button>
       <button class="tab" id="tab-my-invoices" onclick="switchDashTab('my-invoices')">My Invoices</button>
     </div>
-    <div id="dash-my-loads"><div class="loading">Loading your loads…</div></div>
-    <div id="dash-my-invoices" class="hidden"><div class="loading">Loading invoices…</div></div>
+    <div id="dash-my-loads" class="dash-panel"><div class="loading">Loading your loads…</div></div>
+    <div id="dash-my-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
   `;
 }
 
@@ -1682,8 +1690,8 @@ function renderCarrierDashboard() {
       <button class="tab active" id="tab-my-quotes" onclick="switchDashTab('my-quotes')">My Quotes</button>
       <button class="tab" id="tab-my-carrier-invoices" onclick="switchDashTab('my-carrier-invoices')">My Invoices</button>
     </div>
-    <div id="dash-my-quotes"><div class="loading">Loading your quotes…</div></div>
-    <div id="dash-my-carrier-invoices" class="hidden"><div class="loading">Loading invoices…</div></div>
+    <div id="dash-my-quotes" class="dash-panel"><div class="loading">Loading your quotes…</div></div>
+    <div id="dash-my-carrier-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
   `;
 }
 
@@ -1707,8 +1715,7 @@ function renderDriverDashboard() {
 function switchDashTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-${tab}`)?.classList.add('active');
-  document.querySelectorAll('[id^="dash-"]').forEach((el) => {
-    if (el.id === 'dash-driver-helper') return;
+  document.querySelectorAll('.dash-panel').forEach((el) => {
     el.classList.add('hidden');
   });
   document.getElementById(`dash-${tab}`)?.classList.remove('hidden');
@@ -1847,7 +1854,7 @@ async function loadMyQuotes() {
       return;
     }
     el.innerHTML = quotes.map(q => `
-      <div class="bid-item" onclick="navigate('load',{id:'${q.loadId}'})" style="cursor:pointer">
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(q.loadId)}'})" style="cursor:pointer">
         <div class="bid-body">
           <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
             <span class="bid-amount">$${q.amountUsd}</span>
@@ -1873,7 +1880,7 @@ async function loadMyInvoices() {
       return;
     }
     el.innerHTML = invoices.map(inv => `
-      <div class="bid-item" onclick="navigate('load',{id:'${inv.loadId}'})" style="cursor:pointer">
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
         <div class="bid-body">
           <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
             <span class="bid-amount">$${inv.amountUsd}</span>
@@ -1898,7 +1905,7 @@ async function loadMyCarrierInvoices() {
       return;
     }
     el.innerHTML = invoices.map(inv => `
-      <div class="bid-item" onclick="navigate('load',{id:'${inv.loadId}'})" style="cursor:pointer">
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
         <div class="bid-body">
           <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
             <span class="bid-amount">$${inv.amountUsd}</span>
@@ -1911,11 +1918,6 @@ async function loadMyCarrierInvoices() {
   } catch (err) {
     el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
   }
-}
-
-function loadDriverHelper() {
-  const el = document.getElementById('dash-driver-helper');
-  if (!el) return;
 }
 
 function openLoadById(e) {
