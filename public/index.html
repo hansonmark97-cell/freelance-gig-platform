@@ -798,7 +798,7 @@ function renderQuoteItems(quotes, isOwner) {
           <span class="status-badge status-${q.status}">${q.status}</span>
         </div>
         <div class="bid-message">${esc(q.message)}</div>
-        <div class="bid-meta">Carrier ID: ${esc(q.carrierId)} · ETA ${q.estimatedDays} day${q.estimatedDays !== 1 ? 's' : ''}</div>
+        <div class="bid-meta">Carrier ID: ${esc(q.carrierId)} · ETA ${pluralizeDays(q.estimatedDays)}</div>
       </div>
       ${isOwner && q.status === 'pending' ? `
         <div class="bid-actions">
@@ -960,7 +960,7 @@ async function acceptQuote(id) {
     showToast('Quote accepted');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -970,7 +970,7 @@ async function rejectQuote(id) {
     showToast('Quote rejected');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1005,7 +1005,7 @@ async function addTrackingUpdate(e, shipmentId) {
     showToast('Tracking updated');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1019,7 +1019,7 @@ async function submitPod(e, shipmentId) {
     showToast('Proof of delivery submitted');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1029,7 +1029,7 @@ async function createInvoice(shipmentId) {
     showToast('Invoice generated');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1039,7 +1039,7 @@ async function payInvoice(invoiceId) {
     showToast('Payment initiated');
     navigate('load', { id: state.params.id });
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1049,7 +1049,7 @@ async function cancelLoad(id) {
     await api('DELETE', `/loads/${id}`);
     navigate('loads');
   } catch (err) {
-    alert('Error: ' + err.message);
+    showToast(err.message, true);
   }
 }
 
@@ -1861,7 +1861,7 @@ async function loadMyQuotes() {
             <span class="status-badge status-${q.status}">${q.status}</span>
           </div>
           <div class="bid-message">${esc(q.message)}</div>
-          <div class="bid-meta">Load ID: ${q.loadId} · ETA ${q.estimatedDays} day${q.estimatedDays !== 1 ? 's' : ''}</div>
+          <div class="bid-meta">Load ID: ${q.loadId} · ETA ${pluralizeDays(q.estimatedDays)}</div>
         </div>
       </div>
     `).join('');
@@ -2042,12 +2042,17 @@ function categoryOptions(selected) {
   return cats.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
 }
 
-function showToast(msg) {
+function showToast(msg, isError) {
   const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1f2937;color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease';
-  t.textContent = '✓ ' + msg;
+  const bg = isError ? '#b91c1c' : '#1f2937';
+  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${bg};color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease`;
+  t.textContent = (isError ? '✕ ' : '✓ ') + msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function pluralizeDays(n) {
+  return `${n} day${n !== 1 ? 's' : ''}`;
 }
 
 // Close modal on overlay click
