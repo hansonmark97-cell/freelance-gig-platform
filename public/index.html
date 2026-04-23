@@ -41,6 +41,10 @@
     .badge { font-size: .7rem; font-weight: 600; padding: .15rem .5rem; border-radius: 999px; text-transform: uppercase; }
     .badge-freelancer { background: #dbeafe; color: #1d4ed8; }
     .badge-client { background: #dcfce7; color: #15803d; }
+    .badge-shipper { background: #ede9fe; color: #5b21b6; }
+    .badge-carrier { background: #fef3c7; color: #92400e; }
+    .badge-driver { background: #d1fae5; color: #065f46; }
+    .badge-admin { background: #fee2e2; color: #991b1b; }
 
     /* BUTTONS */
     .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.1rem; border-radius: var(--radius); font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
@@ -152,6 +156,12 @@
     .status-accepted { background: #d1fae5; color: #065f46; }
     .status-rejected { background: #fee2e2; color: #991b1b; }
     .status-open { background: #dbeafe; color: #1e40af; }
+    .status-booked { background: #ede9fe; color: #5b21b6; }
+    .status-dispatched { background: #fef3c7; color: #92400e; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+    .status-draft { background: #f3f4f6; color: #374151; }
+    .status-sent { background: #dbeafe; color: #1e40af; }
+    .status-paid { background: #d1fae5; color: #065f46; }
     .status-in_progress { background: #ede9fe; color: #5b21b6; }
     .status-completed { background: #d1fae5; color: #065f46; }
     .status-cancelled { background: #f3f4f6; color: #6b7280; }
@@ -216,7 +226,7 @@
 <nav>
   <div class="nav-inner">
     <a class="nav-logo" onclick="navigate('home')" href="#"><span>Freelance</span>Hub</a>
-    <div class="nav-links">
+    <div class="nav-links" id="nav-links">
       <button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>
       <button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>
     </div>
@@ -260,8 +270,11 @@
         <div class="form-group">
           <label>I am a</label>
           <select id="reg-role">
-            <option value="freelancer">Freelancer</option>
-            <option value="client">Client</option>
+            <option value="freelancer">Freelancer – Offer skills &amp; services</option>
+            <option value="client">Client – Post jobs &amp; hire freelancers</option>
+            <option value="shipper">Shipper – Post freight loads</option>
+            <option value="carrier">Carrier – Transport goods</option>
+            <option value="driver">Driver – Operate delivery vehicles</option>
           </select>
         </div>
       </div>
@@ -305,7 +318,9 @@ let state = {
 
 /* ===== NAV ===== */
 function renderNav() {
+  const links = document.getElementById('nav-links');
   const el = document.getElementById('nav-actions');
+  if (links) links.innerHTML = buildNavLinks();
   if (state.user) {
     el.innerHTML = `
       <div class="nav-user">
@@ -327,6 +342,25 @@ function renderNav() {
   });
 }
 
+function buildNavLinks() {
+  const role = state.user?.role;
+  const links = [];
+  if (!role) {
+    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
+    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
+    links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
+    return links.join('');
+  }
+  if (['freelancer', 'client'].includes(role)) {
+    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
+    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
+  }
+  if (['shipper', 'carrier', 'driver', 'admin'].includes(role)) {
+    links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
+  }
+  return links.join('');
+}
+
 /* ===== ROUTING ===== */
 function navigate(view, params = {}) {
   state.view = view;
@@ -343,6 +377,9 @@ function render() {
     case 'jobs':      renderJobList(app); break;
     case 'gig':       renderGigDetail(app); break;
     case 'job':       renderJobDetail(app); break;
+    case 'loads':     renderLoadList(app); break;
+    case 'load':      renderLoadDetail(app); break;
+    case 'create-load': renderCreateLoad(app); break;
     case 'create-gig': renderCreateGig(app); break;
     case 'edit-gig':  renderEditGig(app); break;
     case 'post-job':  renderPostJob(app); break;
@@ -596,6 +633,424 @@ function renderJobCards(jobs) {
       </div>
     </div>
   `).join('') || emptyState('💼', 'No jobs found', '');
+}
+
+/* ===== LOAD LIST ===== */
+function renderLoadList(app) {
+  app.innerHTML = `
+    <div class="section-header">
+      <h2>Browse Loads</h2>
+      ${state.user && state.user.role === 'shipper'
+        ? `<button class="btn btn-primary btn-sm" onclick="navigate('create-load')">+ Post Load</button>`
+        : ''}
+    </div>
+    <div class="filters">
+      <select id="filter-load-status" onchange="loadLoads()">
+        <option value="open">Open</option>
+        <option value="booked">Booked</option>
+        <option value="in_transit">In Transit</option>
+        <option value="delivered">Delivered</option>
+      </select>
+      <input type="text" id="filter-load-origin" placeholder="Origin" onchange="loadLoads()" />
+      <input type="text" id="filter-load-destination" placeholder="Destination" onchange="loadLoads()" />
+    </div>
+    <div id="load-list-content"><div class="loading">Loading…</div></div>
+  `;
+  loadLoads();
+}
+
+async function loadLoads() {
+  const status = document.getElementById('filter-load-status')?.value || 'open';
+  const origin = document.getElementById('filter-load-origin')?.value || '';
+  const destination = document.getElementById('filter-load-destination')?.value || '';
+  let url = `/loads?status=${encodeURIComponent(status)}`;
+  if (origin) url += `&origin=${encodeURIComponent(origin)}`;
+  if (destination) url += `&destination=${encodeURIComponent(destination)}`;
+  const el = document.getElementById('load-list-content');
+  if (!el) return;
+  el.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const loads = await api('GET', url);
+    el.innerHTML = loads.length
+      ? `<div class="grid">${renderLoadCards(loads)}</div>`
+      : emptyState('🚚', 'No loads found', 'Try different filters.');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function renderLoadCards(loads) {
+  return loads.map(l => `
+    <div class="card" onclick="navigate('load',{id:'${encodeURIComponent(l.id)}'})">
+      <div class="card-header">
+        <h3>${esc(l.title)}</h3>
+        <span class="status-badge status-${l.status}">${l.status}</span>
+      </div>
+      <p>${esc(l.description)}</p>
+      <div class="meta" style="margin-bottom:.75rem">📍 ${esc(l.origin)} → ${esc(l.destination)}</div>
+      <div class="card-footer">
+        <span class="price price-budget">Budget: $${l.budgetUsd}</span>
+        <span class="meta">${l.weightLbs} lbs</span>
+      </div>
+    </div>
+  `).join('') || emptyState('🚚', 'No loads found', '');
+}
+
+async function renderLoadDetail(app) {
+  app.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const load = await api('GET', `/loads/${state.params.id}`);
+    const isOwner = state.user && state.user.id === load.shipperId;
+    const canQuote = state.user && state.user.role === 'carrier' && load.status === 'open';
+    const [quotes, shipment, invoices] = await Promise.all([
+      state.user ? api('GET', `/quotes/load/${load.id}`).catch(() => []) : Promise.resolve([]),
+      state.user ? api('GET', `/shipments/load/${load.id}`).catch(() => null) : Promise.resolve(null),
+      state.user && ['shipper', 'carrier'].includes(state.user.role)
+        ? api('GET', '/invoices/my').then((items) => items.filter((i) => i.loadId === load.id)).catch(() => [])
+        : Promise.resolve([]),
+    ]);
+    const acceptedQuote = quotes.find(q => q.status === 'accepted');
+    const userCanManageShipment = state.user && shipment &&
+      ((state.user.role === 'carrier' && shipment.carrierId === state.user.id) || (state.user.role === 'driver' && shipment.driverId === state.user.id));
+
+    app.innerHTML = `
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('loads')">← Back to Loads</button>
+      </div>
+      <div class="detail-page">
+        <div>
+          <div class="detail-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
+              <span class="meta">${esc(load.origin)} → ${esc(load.destination)}</span>
+              <span class="status-badge status-${load.status}">${load.status}</span>
+            </div>
+            <h1 class="detail-title">${esc(load.title)}</h1>
+            <div class="detail-meta">
+              <span>⚖️ ${load.weightLbs} lbs</span>
+              <span>💰 Budget $${load.budgetUsd}</span>
+              <span>🗓 Posted ${formatDate(load.createdAt)}</span>
+            </div>
+            <div class="detail-body">${esc(load.description)}</div>
+            ${(isOwner && load.status === 'open') ? `<button class="btn btn-danger btn-sm" onclick="cancelLoad('${encodeURIComponent(load.id)}')">Cancel Load</button>` : ''}
+          </div>
+          ${state.user ? `
+            <div class="detail-card" style="margin-top:1.5rem">
+              <h3 style="margin-bottom:1rem">Quotes (${quotes.length})</h3>
+              ${renderQuoteItems(quotes, isOwner)}
+            </div>
+          ` : ''}
+          ${shipment ? `
+            <div class="detail-card" style="margin-top:1.5rem">
+              <h3 style="margin-bottom:1rem">Shipment</h3>
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
+                <span class="status-badge status-${shipment.status}">${shipment.status}</span>
+                <span class="meta">Current: ${esc(shipment.currentLocation || 'N/A')}</span>
+              </div>
+              ${shipment.trackingUpdates?.length ? `<div style="font-size:.875rem;color:var(--text-muted);margin-bottom:.75rem">Latest: ${esc(shipment.trackingUpdates[shipment.trackingUpdates.length - 1].location)} (${formatDate(shipment.trackingUpdates[shipment.trackingUpdates.length - 1].timestamp)})</div>` : ''}
+              ${shipment.proofOfDelivery ? `<div class="alert alert-success" style="margin-bottom:.75rem">Delivered and signed by ${esc(shipment.proofOfDelivery.signedBy)}</div>` : ''}
+              ${userCanManageShipment ? renderShipmentActions(shipment.id, shipment.status) : ''}
+            </div>
+          ` : ''}
+          ${invoices.length ? `
+            <div class="detail-card" style="margin-top:1.5rem">
+              <h3 style="margin-bottom:1rem">Invoices</h3>
+              ${invoices.map(inv => `
+                <div class="bid-item" style="cursor:default">
+                  <div class="bid-body">
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+                      <span class="bid-amount">$${inv.amountUsd}</span>
+                      <span class="status-badge status-${inv.status}">${inv.status}</span>
+                    </div>
+                    <div class="bid-meta">Platform fee $${inv.platformFeeUsd} · Carrier payout $${inv.carrierPayoutUsd}</div>
+                  </div>
+                  ${state.user && state.user.role === 'shipper' && inv.shipperId === state.user.id && inv.status !== 'paid'
+                    ? `<div class="bid-actions"><button class="btn btn-primary btn-sm" onclick="payInvoice('${encodeURIComponent(inv.id)}')">Pay</button></div>`
+                    : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+        <div class="detail-sidebar">
+          ${canQuote ? renderQuoteForm(load.id) : ''}
+          ${state.user && state.user.role === 'carrier' && acceptedQuote && !shipment && acceptedQuote.carrierId === state.user.id
+            ? renderDispatchForm(load.id, acceptedQuote.id)
+            : ''}
+          ${state.user && state.user.role === 'carrier' && shipment && shipment.status === 'delivered' && !invoices.length
+            ? `<div class="sidebar-card"><h4>Billing</h4><button class="btn btn-primary" onclick="createInvoice('${encodeURIComponent(shipment.id)}')">Generate Invoice</button></div>`
+            : ''}
+          ${!state.user ? `<div class="sidebar-card"><p style="font-size:.875rem;color:var(--text-muted)"><a href="#" onclick="openAuth('login')">Log in</a> to quote or track loads.</p></div>` : ''}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function renderQuoteItems(quotes, isOwner) {
+  if (!quotes.length) return '<p style="color:var(--text-muted);font-size:.875rem">No quotes yet.</p>';
+  return quotes.map(q => `
+    <div class="bid-item">
+      <div class="bid-body">
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+          <span class="bid-amount">$${q.amountUsd}</span>
+          <span class="status-badge status-${q.status}">${q.status}</span>
+        </div>
+        <div class="bid-message">${esc(q.message)}</div>
+        <div class="bid-meta">Carrier ID: ${esc(q.carrierId)} · ETA ${pluralizeDays(q.estimatedDays)}</div>
+      </div>
+      ${isOwner && q.status === 'pending' ? `
+        <div class="bid-actions">
+          <button class="btn btn-success btn-sm" onclick="acceptQuote('${encodeURIComponent(q.id)}')">Accept</button>
+          <button class="btn btn-secondary btn-sm" onclick="rejectQuote('${encodeURIComponent(q.id)}')">Reject</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+function renderQuoteForm(loadId) {
+  return `
+    <div class="sidebar-card">
+      <h4>Submit Quote</h4>
+      <form onsubmit="submitQuote(event,'${loadId}')">
+        <div class="form-group">
+          <label>Amount (USD)</label>
+          <input type="number" id="quote-amount" min="1" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label>Estimated Days</label>
+          <input type="number" id="quote-days" min="1" required />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="quote-message" style="min-height:90px" required></textarea>
+        </div>
+        <div id="quote-error" class="alert alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Submit Quote</button>
+      </form>
+    </div>
+  `;
+}
+
+function renderDispatchForm(loadId, quoteId) {
+  return `
+    <div class="sidebar-card">
+      <h4>Dispatch Shipment</h4>
+      <form onsubmit="dispatchShipment(event,'${loadId}','${quoteId}')">
+        <div class="form-group">
+          <label>Driver ID (optional)</label>
+          <input type="text" id="dispatch-driver" placeholder="driver user id" />
+        </div>
+        <div id="dispatch-error" class="alert alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Dispatch</button>
+      </form>
+    </div>
+  `;
+}
+
+function renderShipmentActions(shipmentId, status) {
+  const canTrack = ['dispatched', 'in_transit'].includes(status);
+  return `
+    <div style="display:grid;gap:.75rem">
+      ${canTrack ? `
+        <form onsubmit="addTrackingUpdate(event,'${shipmentId}')" style="display:grid;gap:.5rem">
+          <input type="text" id="track-location" placeholder="Current location" required />
+          <input type="text" id="track-note" placeholder="Optional note" />
+          <button class="btn btn-secondary btn-sm" type="submit">Add Tracking</button>
+        </form>
+        <form onsubmit="submitPod(event,'${shipmentId}')" style="display:grid;gap:.5rem">
+          <input type="text" id="pod-signed-by" placeholder="Signed by" required />
+          <input type="text" id="pod-notes" placeholder="Optional delivery notes" />
+          <button class="btn btn-success btn-sm" type="submit">Submit POD</button>
+        </form>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderCreateLoad(app) {
+  if (!state.user || state.user.role !== 'shipper') {
+    app.innerHTML = `<div class="alert alert-error">Only shippers can post loads.</div>`;
+    return;
+  }
+  app.innerHTML = `
+    <div class="form-page">
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
+      </div>
+      <div class="form-card">
+        <h2>Post a Load</h2>
+        <form onsubmit="createLoad(event)">
+          <div class="form-group"><label>Title</label><input type="text" id="load-title" required /></div>
+          <div class="form-group"><label>Description</label><textarea id="load-description" style="min-height:120px" required></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Origin</label><input type="text" id="load-origin" required /></div>
+            <div class="form-group"><label>Destination</label><input type="text" id="load-destination" required /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Weight (lbs)</label><input type="number" id="load-weight" min="1" required /></div>
+            <div class="form-group"><label>Budget (USD)</label><input type="number" id="load-budget" min="1" step="0.01" required /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Freight Class</label><input type="text" id="load-class" placeholder="Optional" /></div>
+            <div class="form-group"><label>Pickup Date</label><input type="date" id="load-pickup" /></div>
+          </div>
+          <div class="form-group"><label>Delivery Date</label><input type="date" id="load-delivery" /></div>
+          <div id="create-load-error" class="alert alert-error hidden"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Post Load</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+async function createLoad(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('create-load-error');
+  errEl.classList.add('hidden');
+  try {
+    const load = await api('POST', '/loads', {
+      title: document.getElementById('load-title').value,
+      description: document.getElementById('load-description').value,
+      origin: document.getElementById('load-origin').value,
+      destination: document.getElementById('load-destination').value,
+      weightLbs: parseFloat(document.getElementById('load-weight').value),
+      budgetUsd: parseFloat(document.getElementById('load-budget').value),
+      freightClass: document.getElementById('load-class').value || null,
+      pickupDate: document.getElementById('load-pickup').value || null,
+      deliveryDate: document.getElementById('load-delivery').value || null,
+    });
+    navigate('load', { id: load.id });
+    showToast('Load posted!');
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function submitQuote(e, loadId) {
+  e.preventDefault();
+  const errEl = document.getElementById('quote-error');
+  if (errEl) errEl.classList.add('hidden');
+  try {
+    await api('POST', '/quotes', {
+      loadId,
+      amountUsd: parseFloat(document.getElementById('quote-amount').value),
+      estimatedDays: parseInt(document.getElementById('quote-days').value),
+      message: document.getElementById('quote-message').value,
+    });
+    showToast('Quote submitted!');
+    navigate('load', { id: loadId });
+  } catch (err) {
+    if (errEl) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+}
+
+async function acceptQuote(id) {
+  try {
+    await api('PUT', `/quotes/${id}/accept`);
+    showToast('Quote accepted');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function rejectQuote(id) {
+  try {
+    await api('PUT', `/quotes/${id}/reject`);
+    showToast('Quote rejected');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function dispatchShipment(e, loadId, quoteId) {
+  e.preventDefault();
+  const errEl = document.getElementById('dispatch-error');
+  if (errEl) errEl.classList.add('hidden');
+  try {
+    const driverId = document.getElementById('dispatch-driver').value.trim();
+    await api('POST', '/shipments', {
+      loadId,
+      quoteId,
+      ...(driverId ? { driverId } : {}),
+    });
+    showToast('Shipment dispatched');
+    navigate('load', { id: loadId });
+  } catch (err) {
+    if (errEl) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+}
+
+async function addTrackingUpdate(e, shipmentId) {
+  e.preventDefault();
+  try {
+    await api('POST', `/shipments/${shipmentId}/tracking`, {
+      location: document.getElementById('track-location').value,
+      note: document.getElementById('track-note').value || null,
+    });
+    showToast('Tracking updated');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function submitPod(e, shipmentId) {
+  e.preventDefault();
+  try {
+    await api('POST', `/shipments/${shipmentId}/pod`, {
+      signedBy: document.getElementById('pod-signed-by').value,
+      notes: document.getElementById('pod-notes').value || null,
+    });
+    showToast('Proof of delivery submitted');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function createInvoice(shipmentId) {
+  try {
+    await api('POST', '/invoices', { shipmentId });
+    showToast('Invoice generated');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function payInvoice(invoiceId) {
+  try {
+    await api('POST', `/invoices/${invoiceId}/pay`);
+    showToast('Payment initiated');
+    navigate('load', { id: state.params.id });
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function cancelLoad(id) {
+  if (!confirm('Cancel this load?')) return;
+  try {
+    await api('DELETE', `/loads/${id}`);
+    navigate('loads');
+  } catch (err) {
+    showToast(err.message, true);
+  }
 }
 
 /* ===== GIG DETAIL ===== */
@@ -1144,18 +1599,60 @@ async function renderDashboard(app) {
         <h2>${esc(state.user.name)}</h2>
         <p>${esc(state.user.email)} · <span class="badge badge-${state.user.role}">${state.user.role}</span></p>
       </div>
-      ${state.user.role === 'freelancer'
-        ? `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-gig')">+ Create Gig</button>`
-        : `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('post-job')">+ Post Job</button>`
-      }
+      ${getDashboardActionButton()}
     </div>
-    ${state.user.role === 'freelancer' ? renderFreelancerDashboard() : renderClientDashboard()}
+    ${renderDashboardBody()}
   `;
+  loadDashboardData();
+}
+
+function getDashboardActionButton() {
+  if (state.user.role === 'freelancer') {
+    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-gig')">+ Create Gig</button>`;
+  }
+  if (state.user.role === 'client') {
+    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('post-job')">+ Post Job</button>`;
+  }
+  if (state.user.role === 'shipper') {
+    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-load')">+ Post Load</button>`;
+  }
+  if (state.user.role === 'carrier') {
+    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('loads')">Browse Loads</button>`;
+  }
+  return '';
+}
+
+function renderDashboardBody() {
+  if (state.user.role === 'freelancer') return renderFreelancerDashboard();
+  if (state.user.role === 'client') return renderClientDashboard();
+  if (state.user.role === 'shipper') return renderShipperDashboard();
+  if (state.user.role === 'carrier') return renderCarrierDashboard();
+  if (state.user.role === 'driver') return renderDriverDashboard();
+  return `<div class="alert alert-info">No dashboard widgets configured for ${esc(state.user.role)}.</div>`;
+}
+
+function loadDashboardData() {
   if (state.user.role === 'freelancer') {
     loadMyGigs();
     loadMyBids();
-  } else {
+    return;
+  }
+  if (state.user.role === 'client') {
     loadMyJobs();
+    return;
+  }
+  if (state.user.role === 'shipper') {
+    loadMyLoads();
+    loadMyInvoices();
+    return;
+  }
+  if (state.user.role === 'carrier') {
+    loadMyQuotes();
+    loadMyCarrierInvoices();
+    return;
+  }
+  if (state.user.role === 'driver') {
+    return;
   }
 }
 
@@ -1165,8 +1662,8 @@ function renderFreelancerDashboard() {
       <button class="tab active" id="tab-my-gigs" onclick="switchDashTab('my-gigs')">My Gigs</button>
       <button class="tab" id="tab-my-bids" onclick="switchDashTab('my-bids')">My Bids</button>
     </div>
-    <div id="dash-my-gigs"><div class="loading">Loading…</div></div>
-    <div id="dash-my-bids" class="hidden"><div class="loading">Loading…</div></div>
+    <div id="dash-my-gigs" class="dash-panel"><div class="loading">Loading…</div></div>
+    <div id="dash-my-bids" class="dash-panel hidden"><div class="loading">Loading…</div></div>
   `;
 }
 
@@ -1176,12 +1673,52 @@ function renderClientDashboard() {
   `;
 }
 
+function renderShipperDashboard() {
+  return `
+    <div class="tabs">
+      <button class="tab active" id="tab-my-loads" onclick="switchDashTab('my-loads')">My Loads</button>
+      <button class="tab" id="tab-my-invoices" onclick="switchDashTab('my-invoices')">My Invoices</button>
+    </div>
+    <div id="dash-my-loads" class="dash-panel"><div class="loading">Loading your loads…</div></div>
+    <div id="dash-my-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
+  `;
+}
+
+function renderCarrierDashboard() {
+  return `
+    <div class="tabs">
+      <button class="tab active" id="tab-my-quotes" onclick="switchDashTab('my-quotes')">My Quotes</button>
+      <button class="tab" id="tab-my-carrier-invoices" onclick="switchDashTab('my-carrier-invoices')">My Invoices</button>
+    </div>
+    <div id="dash-my-quotes" class="dash-panel"><div class="loading">Loading your quotes…</div></div>
+    <div id="dash-my-carrier-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
+  `;
+}
+
+function renderDriverDashboard() {
+  return `
+    <div id="dash-driver-helper">
+      <div class="detail-card">
+        <h3 style="margin-bottom:1rem">Driver tools</h3>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem">Open a load by ID to update tracking or submit proof of delivery.</p>
+        <form onsubmit="openLoadById(event)">
+          <div class="form-row">
+            <div class="form-group"><input type="text" id="driver-load-id" placeholder="Load ID" required /></div>
+            <div class="form-group"><button class="btn btn-primary" type="submit" style="width:100%">Open Load</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
 function switchDashTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-${tab}`)?.classList.add('active');
-  ['my-gigs', 'my-bids'].forEach(id => {
-    document.getElementById(`dash-${id}`)?.classList.toggle('hidden', id !== tab);
+  document.querySelectorAll('.dash-panel').forEach((el) => {
+    el.classList.add('hidden');
   });
+  document.getElementById(`dash-${tab}`)?.classList.remove('hidden');
 }
 
 async function loadMyGigs() {
@@ -1287,6 +1824,107 @@ async function loadMyJobs() {
   } catch (err) {
     el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
   }
+}
+
+async function loadMyLoads() {
+  const el = document.getElementById('dash-my-loads');
+  if (!el) return;
+  try {
+    const statuses = ['open', 'booked', 'in_transit', 'delivered', 'cancelled'];
+    const loadGroups = await Promise.all(statuses.map(s => api('GET', `/loads?status=${s}`).catch(() => [])));
+    const mine = loadGroups.flat().filter(l => l.shipperId === state.user.id);
+    if (!mine.length) {
+      el.innerHTML = `${emptyState('🚚', 'No loads yet', 'Post your first load to start getting quotes.')}
+      <div style="text-align:center;margin-top:1rem"><button class="btn btn-primary" onclick="navigate('create-load')">Post Your First Load</button></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="grid">${renderLoadCards(mine)}</div>`;
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function loadMyQuotes() {
+  const el = document.getElementById('dash-my-quotes');
+  if (!el) return;
+  try {
+    const quotes = await api('GET', '/quotes/my');
+    if (!quotes.length) {
+      el.innerHTML = emptyState('📝', 'No quotes yet', 'Browse open loads and submit your first quote.');
+      return;
+    }
+    el.innerHTML = quotes.map(q => `
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(q.loadId)}'})" style="cursor:pointer">
+        <div class="bid-body">
+          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <span class="bid-amount">$${q.amountUsd}</span>
+            <span class="status-badge status-${q.status}">${q.status}</span>
+          </div>
+          <div class="bid-message">${esc(q.message)}</div>
+          <div class="bid-meta">Load ID: ${q.loadId} · ETA ${pluralizeDays(q.estimatedDays)}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function loadMyInvoices() {
+  const el = document.getElementById('dash-my-invoices');
+  if (!el) return;
+  try {
+    const invoices = await api('GET', '/invoices/my');
+    if (!invoices.length) {
+      el.innerHTML = emptyState('🧾', 'No invoices yet', 'Delivered loads will appear here for payment.');
+      return;
+    }
+    el.innerHTML = invoices.map(inv => `
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
+        <div class="bid-body">
+          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <span class="bid-amount">$${inv.amountUsd}</span>
+            <span class="status-badge status-${inv.status}">${inv.status}</span>
+          </div>
+          <div class="bid-meta">Load: ${inv.loadId}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+async function loadMyCarrierInvoices() {
+  const el = document.getElementById('dash-my-carrier-invoices');
+  if (!el) return;
+  try {
+    const invoices = await api('GET', '/invoices/my');
+    if (!invoices.length) {
+      el.innerHTML = emptyState('🧾', 'No invoices yet', 'Generate invoices after loads are delivered.');
+      return;
+    }
+    el.innerHTML = invoices.map(inv => `
+      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
+        <div class="bid-body">
+          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <span class="bid-amount">$${inv.amountUsd}</span>
+            <span class="status-badge status-${inv.status}">${inv.status}</span>
+          </div>
+          <div class="bid-meta">Carrier payout: $${inv.carrierPayoutUsd}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+  }
+}
+
+function openLoadById(e) {
+  e.preventDefault();
+  const id = document.getElementById('driver-load-id').value.trim();
+  if (!id) return;
+  navigate('load', { id });
 }
 
 /* ===== PROFILE ===== */
@@ -1404,12 +2042,20 @@ function categoryOptions(selected) {
   return cats.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
 }
 
-function showToast(msg) {
+function showToast(msg, isError) {
   const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1f2937;color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease';
-  t.textContent = '✓ ' + msg;
+  const bg = isError ? '#b91c1c' : '#1f2937';
+  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${bg};color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease;cursor:pointer`;
+  t.textContent = (isError ? '✕ ' : '✓ ') + msg;
+  t.title = isError ? 'Click to dismiss' : '';
+  t.addEventListener('click', () => t.remove());
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  // Error toasts stay until clicked; success toasts auto-dismiss after 3 s
+  if (!isError) setTimeout(() => t.remove(), 3000);
+}
+
+function pluralizeDays(n) {
+  return `${n} day${n !== 1 ? 's' : ''}`;
 }
 
 // Close modal on overlay click
