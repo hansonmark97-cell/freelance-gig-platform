@@ -270,11 +270,11 @@
         <div class="form-group">
           <label>I am a</label>
           <select id="reg-role">
-            <option value="freelancer">Freelancer</option>
-            <option value="client">Client</option>
-            <option value="shipper">Shipper</option>
-            <option value="carrier">Carrier</option>
-            <option value="driver">Driver</option>
+            <option value="freelancer">Freelancer – Offer skills &amp; services</option>
+            <option value="client">Client – Post jobs &amp; hire freelancers</option>
+            <option value="shipper">Shipper – Post freight loads</option>
+            <option value="carrier">Carrier – Transport goods</option>
+            <option value="driver">Driver – Operate delivery vehicles</option>
           </select>
         </div>
       </div>
@@ -2045,10 +2045,13 @@ function categoryOptions(selected) {
 function showToast(msg, isError) {
   const t = document.createElement('div');
   const bg = isError ? '#b91c1c' : '#1f2937';
-  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${bg};color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease`;
+  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${bg};color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease;cursor:pointer`;
   t.textContent = (isError ? '✕ ' : '✓ ') + msg;
+  t.title = isError ? 'Click to dismiss' : '';
+  t.addEventListener('click', () => t.remove());
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+  // Error toasts stay until clicked; success toasts auto-dismiss after 3 s
+  if (!isError) setTimeout(() => t.remove(), 3000);
 }
 
 function pluralizeDays(n) {
