@@ -162,6 +162,18 @@ router.post('/:id/pod', authenticate, async (req, res) => {
     // Move load to delivered
     await db.collection('loads').doc(shipment.loadId).update({ status: 'delivered' });
 
+    // Auto-release escrowed invoice (Component 2 — Automated Escrow & Split Payments)
+    const escrowedInvoiceSnap = await db.collection('invoices')
+      .where('shipmentId', '==', req.params.id)
+      .where('status', '==', 'escrowed')
+      .get();
+    if (!escrowedInvoiceSnap.empty) {
+      await db.collection('invoices').doc(escrowedInvoiceSnap.docs[0].id).update({
+        status: 'paid',
+        paidAt: new Date().toISOString(),
+      });
+    }
+
     const updated = await db.collection('shipments').doc(req.params.id).get();
     return res.json(updated.data());
   } catch (err) {

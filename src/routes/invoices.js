@@ -3,7 +3,7 @@ const Stripe = require('stripe');
 const { db } = require('../firebase');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { generateId } = require('../utils');
-const { PLATFORM_FEE_RATE } = require('../constants');
+const { BROKERAGE_FEE_RATE, DRIVER_SHARE_RATE } = require('../constants');
 
 const router = express.Router();
 
@@ -11,7 +11,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2023-10-16',
 });
 
-// POST / — generate invoice for a delivered shipment (carrier only)
+const VALID_INVOICE_SHIPMENT_STATUSES = ['dispatched', 'in_transit', 'delivered'];
+
+// POST / — generate invoice for a shipment (carrier only, shipment must be active or delivered)
 router.post('/', authenticate, requireRole('carrier'), async (req, res) => {
   try {
     const { shipmentId } = req.body;
@@ -22,7 +24,9 @@ router.post('/', authenticate, requireRole('carrier'), async (req, res) => {
     const shipment = shipmentDoc.data();
 
     if (shipment.carrierId !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
-    if (shipment.status !== 'delivered') return res.status(400).json({ error: 'Invoice can only be generated for delivered shipments' });
+    if (!VALID_INVOICE_SHIPMENT_STATUSES.includes(shipment.status)) {
+      return res.status(400).json({ error: 'Invoice can only be generated for active or delivered shipments' });
+    }
 
     // Check no invoice already exists
     const existingSnap = await db.collection('invoices').where('shipmentId', '==', shipmentId).get();
@@ -37,8 +41,8 @@ router.post('/', authenticate, requireRole('carrier'), async (req, res) => {
     const load = loadDoc.data();
 
     const amountUsd = quote.amountUsd;
-    const platformFeeUsd = +(amountUsd * PLATFORM_FEE_RATE).toFixed(2);
-    const carrierPayoutUsd = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
+    const platformFeeUsd = +(amountUsd * BROKERAGE_FEE_RATE).toFixed(2);
+    const carrierPayoutUsd = +(amountUsd * DRIVER_SHARE_RATE).toFixed(2);
 
     const id = generateId();
     const createdAt = new Date().toISOString();
@@ -95,6 +99,48 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
+// POST /:id/escrow — shipper deposits funds to escrow upfront (Component 2)
+// Shipper pays when booking is confirmed; funds held until BOL/POD is submitted.
+router.post('/:id/escrow', authenticate, requireRole('shipper'), async (req, res) => {
+  try {
+    const doc = await db.collection('invoices').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Invoice not found' });
+    const invoice = doc.data();
+    if (invoice.shipperId !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+    if (invoice.status === 'escrowed') return res.status(400).json({ error: 'Invoice already in escrow' });
+    if (invoice.status === 'paid') return res.status(400).json({ error: 'Invoice already paid' });
+    if (!['draft', 'sent'].includes(invoice.status)) {
+      return res.status(400).json({ error: 'Invoice cannot be moved to escrow from its current status' });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(invoice.amountUsd * 100),
+      currency: 'usd',
+      metadata: {
+        invoiceId: invoice.id,
+        platformFeeUsd: invoice.platformFeeUsd,
+        carrierPayoutUsd: invoice.carrierPayoutUsd,
+        escrow: 'true',
+      },
+    });
+
+    await db.collection('invoices').doc(req.params.id).update({
+      status: 'escrowed',
+      escrowedAt: new Date().toISOString(),
+      escrowPaymentIntentId: paymentIntent.id,
+    });
+
+    return res.status(201).json({
+      clientSecret: paymentIntent.client_secret,
+      platformFeeUsd: invoice.platformFeeUsd,
+      carrierPayoutUsd: invoice.carrierPayoutUsd,
+      status: 'escrowed',
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /:id/pay — create Stripe PaymentIntent and mark invoice as sent (shipper only)
 router.post('/:id/pay', authenticate, requireRole('shipper'), async (req, res) => {
   try {
@@ -103,6 +149,7 @@ router.post('/:id/pay', authenticate, requireRole('shipper'), async (req, res) =
     const invoice = doc.data();
     if (invoice.shipperId !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
     if (invoice.status === 'paid') return res.status(400).json({ error: 'Invoice already paid' });
+    if (invoice.status === 'escrowed') return res.status(400).json({ error: 'Invoice is in escrow; it will be released automatically on delivery' });
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(invoice.amountUsd * 100),

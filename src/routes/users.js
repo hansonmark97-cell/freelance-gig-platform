@@ -96,4 +96,56 @@ router.put('/me', authenticate, async (req, res) => {
   }
 });
 
+// POST /me/documents — submit insurance/MC/DOT documents for AI verification (Component 3)
+// Simulates an AI document scanner (e.g. Google Cloud Vision) that verifies carrier credentials.
+// All required fields present → instantly marked 'verified'; otherwise 'pending'.
+router.post('/me/documents', authenticate, async (req, res) => {
+  try {
+    if (!['carrier', 'driver'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Only carriers and drivers can submit verification documents' });
+    }
+
+    const { insuranceUrl, mcNumber, dotNumber } = req.body;
+    if (!insuranceUrl && !mcNumber && !dotNumber) {
+      return res.status(400).json({ error: 'At least one of insuranceUrl, mcNumber, or dotNumber is required' });
+    }
+
+    // AI verification stub: if all three fields are supplied, instantly verify
+    const allPresent = !!(insuranceUrl && mcNumber && dotNumber);
+    const verificationStatus = allPresent ? 'verified' : 'pending';
+    const submittedAt = new Date().toISOString();
+
+    const documents = {
+      insuranceUrl: insuranceUrl || null,
+      mcNumber: mcNumber || null,
+      dotNumber: dotNumber || null,
+      verificationStatus,
+      submittedAt,
+      verifiedAt: allPresent ? submittedAt : null,
+    };
+
+    await db.collection('users').doc(req.user.id).update({ documents });
+    return res.status(200).json({ documents });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /me/documents — get current verification status (Component 3)
+router.get('/me/documents', authenticate, async (req, res) => {
+  try {
+    if (!['carrier', 'driver'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Only carriers and drivers can view verification documents' });
+    }
+
+    const doc = await db.collection('users').doc(req.user.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'User not found' });
+    const { documents } = doc.data();
+    if (!documents) return res.status(404).json({ error: 'No documents submitted yet' });
+    return res.json({ documents });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
