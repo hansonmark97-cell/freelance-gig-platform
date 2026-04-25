@@ -31,4 +31,7 @@ app.use('/api/shipments', require('./routes/shipments'));
 app.use('/api/invoices', require('./routes/invoices'));
 app.use('/api/admin', require('./routes/admin'));
 
+// WeldScan 3D routes
+app.use('/api/weldscan', require('./routes/weldscan'));
+
 module.exports = app;
