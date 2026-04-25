@@ -154,7 +154,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 ),
                 const SizedBox(width: 8),
                 _ParamChip(
-                  label: 'Kerf (${ _kerfType})',
+                  label: 'Kerf (${_kerfType})',
                   value: '${_kerfMm.toStringAsFixed(1)}mm',
                   onTap: () => _showKerfDialog(),
                 ),
