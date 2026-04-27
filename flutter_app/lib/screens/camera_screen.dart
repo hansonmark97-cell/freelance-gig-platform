@@ -51,6 +51,22 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _controller;
+    if (state == AppLifecycleState.paused) {
+      // Release camera when app moves to the background.
+      if (controller != null && controller.value.isInitialized) {
+        setState(() => _isInitialized = false);
+        controller.dispose();
+        _controller = null;
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // Re-acquire camera when app comes back to foreground.
+      _initCamera();
+    }
+  }
+
   Future<void> _capture() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
     final XFile file = await _controller!.takePicture();

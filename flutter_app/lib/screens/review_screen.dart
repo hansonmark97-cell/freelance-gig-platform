@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets/three_d_viewer.dart';
 import '../widgets/weld_symbol_picker.dart';
 import 'export_screen.dart';
 
@@ -20,7 +21,9 @@ class ReviewScreen extends StatefulWidget {
   State<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ReviewScreenState extends State<ReviewScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
   // Material params
   double _thicknessMm = 10.0;
   double _kerfMm = 1.5;
@@ -41,7 +44,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _analyze();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _analyze() async {
@@ -114,6 +124,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
               child: Text('EXPORT', style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold)),
             ),
         ],
+        bottom: result != null
+            ? TabBar(
+                controller: _tabController,
+                indicatorColor: cs.primary,
+                labelColor: cs.primary,
+                unselectedLabelColor: cs.onSurface.withOpacity(0.5),
+                tabs: const [
+                  Tab(icon: Icon(Icons.view_in_ar_rounded), text: '3D VIEW'),
+                  Tab(icon: Icon(Icons.assignment_rounded), text: 'BLUEPRINT'),
+                ],
+              )
+            : null,
       ),
       body: _isAnalyzing
           ? const Center(child: CircularProgressIndicator())
@@ -133,127 +155,145 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final summary = result['summary'] as Map<String, dynamic>;
     final welderCalcs = result['welderCalcs'] as Map<String, dynamic>;
     final cutList = result['cutList'] as List<dynamic>;
+    final typedCutList = cutList
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+
+    // Material params bar (shared across both tabs)
+    final paramsBar = Container(
+      color: cs.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _ParamChip(
+              label: 'Thickness',
+              value: '${_thicknessMm.toStringAsFixed(0)}mm',
+              onTap: () => _showNumberDialog('Metal thickness (mm)', _thicknessMm, (v) {
+                setState(() => _thicknessMm = v);
+                _analyze();
+              }),
+            ),
+            const SizedBox(width: 8),
+            _ParamChip(
+              label: 'Kerf (${_kerfType})',
+              value: '${_kerfMm.toStringAsFixed(1)}mm',
+              onTap: () => _showKerfDialog(),
+            ),
+            const SizedBox(width: 8),
+            _ParamChip(
+              label: 'Wire Ø',
+              value: '${_wireDiameterMm.toStringAsFixed(2)}mm',
+              onTap: () => _showNumberDialog('Wire diameter (mm)', _wireDiameterMm, (v) {
+                setState(() => _wireDiameterMm = v);
+                _analyze();
+              }),
+            ),
+            const SizedBox(width: 8),
+            _ParamChip(
+              label: 'Fillet leg',
+              value: '${_weldLegMm.toStringAsFixed(0)}mm',
+              onTap: () => _showNumberDialog('Fillet leg size (mm)', _weldLegMm, (v) {
+                setState(() => _weldLegMm = v);
+                _analyze();
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
 
     return Column(
       children: [
-        // Material params bar
-        Container(
-          color: cs.surface,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _ParamChip(
-                  label: 'Thickness',
-                  value: '${_thicknessMm.toStringAsFixed(0)}mm',
-                  onTap: () => _showNumberDialog('Metal thickness (mm)', _thicknessMm, (v) {
-                    setState(() => _thicknessMm = v);
-                    _analyze();
-                  }),
-                ),
-                const SizedBox(width: 8),
-                _ParamChip(
-                  label: 'Kerf (${_kerfType})',
-                  value: '${_kerfMm.toStringAsFixed(1)}mm',
-                  onTap: () => _showKerfDialog(),
-                ),
-                const SizedBox(width: 8),
-                _ParamChip(
-                  label: 'Wire Ø',
-                  value: '${_wireDiameterMm.toStringAsFixed(2)}mm',
-                  onTap: () => _showNumberDialog('Wire diameter (mm)', _wireDiameterMm, (v) {
-                    setState(() => _wireDiameterMm = v);
-                    _analyze();
-                  }),
-                ),
-                const SizedBox(width: 8),
-                _ParamChip(
-                  label: 'Fillet leg',
-                  value: '${_weldLegMm.toStringAsFixed(0)}mm',
-                  onTap: () => _showNumberDialog('Fillet leg size (mm)', _weldLegMm, (v) {
-                    setState(() => _weldLegMm = v);
-                    _analyze();
-                  }),
-                ),
-              ],
-            ),
-          ),
-        ),
-
+        paramsBar,
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Summary card
-                _SectionCard(
-                  title: 'Dimensions',
-                  child: Column(
-                    children: [
-                      _DimRow('Width', '${summary['bboxWidthIn']}"  (${summary['bboxWidthMm']} mm)'),
-                      _DimRow('Height', '${summary['bboxHeightIn']}"  (${summary['bboxHeightMm']} mm)'),
-                      _DimRow('Total cut length', '${summary['totalLengthMm']} mm'),
-                      _DimRow('Total pieces', '${summary['totalPieces']}'),
-                    ],
-                  ),
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              // ── Tab 0: 3D View ─────────────────────────────────────────
+              Container(
+                color: const Color(0xFF0D0D0D),
+                child: ThreeDViewer(
+                  cutList: typedCutList,
+                  thicknessMm: _thicknessMm,
                 ),
-                const SizedBox(height: 12),
+              ),
 
-                // Welder calcs card
-                _SectionCard(
-                  title: 'Welder Calculations',
-                  child: Column(
-                    children: [
-                      _DimRow('Bend deduction', '${welderCalcs['bendDeductionMm']} mm'),
-                      _DimRow('Root gap', '${welderCalcs['rootGapMm']} mm'),
-                      _DimRow('Landing', '${welderCalcs['landingMm']} mm'),
-                      _DimRow('Weld volume', '${welderCalcs['weldVolumeCm3']} cm³'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Cut list
-                _SectionCard(
-                  title: 'Cut List  (tap piece to add weld symbol)',
-                  child: Column(
-                    children: [
-                      // Header
-                      const Row(
+              // ── Tab 1: Blueprint ───────────────────────────────────────
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Summary card
+                    _SectionCard(
+                      title: 'Dimensions',
+                      child: Column(
                         children: [
-                          Expanded(flex: 1, child: Text('Piece', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                          Expanded(flex: 2, child: Text('Length', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                          Expanded(flex: 2, child: Text('Miter°', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                          Expanded(flex: 2, child: Text('Kerf-adj', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                          _DimRow('Width', '${summary['bboxWidthIn']}"  (${summary['bboxWidthMm']} mm)'),
+                          _DimRow('Height', '${summary['bboxHeightIn']}"  (${summary['bboxHeightMm']} mm)'),
+                          _DimRow('Total cut length', '${summary['totalLengthMm']} mm'),
+                          _DimRow('Total pieces', '${summary['totalPieces']}'),
                         ],
                       ),
-                      const Divider(),
-                      ...cutList.asMap().entries.map((entry) {
-                        final i = entry.key;
-                        final chunk = entry.value as Map<String, dynamic>;
-                        return InkWell(
-                          onTap: () => _showWeldSymbolPicker(i),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              children: [
-                                Expanded(flex: 1, child: Text(chunk['label'] as String,
-                                    style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12))),
-                                Expanded(flex: 2, child: Text('${chunk['lengthIn']}"', style: const TextStyle(fontSize: 12))),
-                                Expanded(flex: 2, child: Text('${chunk['miterDeg']}°', style: const TextStyle(fontSize: 12))),
-                                Expanded(flex: 2, child: Text('${chunk['kerfAdjLengthMm']}mm', style: const TextStyle(fontSize: 12))),
-                              ],
-                            ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Welder calcs card
+                    _SectionCard(
+                      title: 'Welder Calculations',
+                      child: Column(
+                        children: [
+                          _DimRow('Bend deduction', '${welderCalcs['bendDeductionMm']} mm'),
+                          _DimRow('Root gap', '${welderCalcs['rootGapMm']} mm'),
+                          _DimRow('Landing', '${welderCalcs['landingMm']} mm'),
+                          _DimRow('Weld volume', '${welderCalcs['weldVolumeCm3']} cm³'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Cut list
+                    _SectionCard(
+                      title: 'Cut List  (tap piece to add weld symbol)',
+                      child: Column(
+                        children: [
+                          const Row(
+                            children: [
+                              Expanded(flex: 1, child: Text('Piece', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                              Expanded(flex: 2, child: Text('Length', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                              Expanded(flex: 2, child: Text('Miter°', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                              Expanded(flex: 2, child: Text('Kerf-adj', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                            ],
                           ),
-                        );
-                      }),
-                    ],
-                  ),
+                          const Divider(),
+                          ...cutList.asMap().entries.map((entry) {
+                            final i = entry.key;
+                            final chunk = entry.value as Map<String, dynamic>;
+                            return InkWell(
+                              onTap: () => _showWeldSymbolPicker(i),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(
+                                  children: [
+                                    Expanded(flex: 1, child: Text(chunk['label'] as String,
+                                        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12))),
+                                    Expanded(flex: 2, child: Text('${chunk['lengthIn']}"', style: const TextStyle(fontSize: 12))),
+                                    Expanded(flex: 2, child: Text('${chunk['miterDeg']}°', style: const TextStyle(fontSize: 12))),
+                                    Expanded(flex: 2, child: Text('${chunk['kerfAdjLengthMm']}mm', style: const TextStyle(fontSize: 12))),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
