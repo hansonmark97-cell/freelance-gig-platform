@@ -20,7 +20,7 @@ class WeldScanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'WeldScan 3D',
+      title: 'WeldScan Platform',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: const ColorScheme.dark(
