@@ -11,11 +11,11 @@ exports.createPaymentIntent = functions.https.onCall(async (data, context) => {
   if (!amountUsd || amountUsd <= 0) throw new functions.https.HttpsError('invalid-argument', 'Invalid amount');
   const { PLATFORM_FEE_RATE } = require('../src/constants');
   const platformFeeUsd = +(amountUsd * PLATFORM_FEE_RATE).toFixed(2);
-  const freelancerPayoutUsd = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
+  const welderPayoutUsd = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.round(amountUsd * 100),
     currency: 'usd',
-    metadata: { platformFeeUsd, freelancerPayoutUsd },
+    metadata: { platformFeeUsd, welderPayoutUsd },
   });
-  return { clientSecret: paymentIntent.client_secret, platformFeeUsd, freelancerPayoutUsd };
+  return { clientSecret: paymentIntent.client_secret, platformFeeUsd, welderPayoutUsd };
 });

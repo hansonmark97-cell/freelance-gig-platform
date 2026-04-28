@@ -86,7 +86,7 @@ const welder = {
   name: 'Mark Welder',
   email: 'mark@weldshop.com',
   password: 'plasma99',
-  role: 'freelancer',
+  role: 'welder',
 };
 
 // --------------------------------------------------------------------------
@@ -372,7 +372,7 @@ describe('POST /api/weldscan/analyze', () => {
   test('returns 403 for another user\'s session', async () => {
     const token1 = await registerAndLogin(welder);
     const token2 = await registerAndLogin({
-      name: 'Other', email: 'other@weld.com', password: 'x', role: 'freelancer',
+      name: 'Other', email: 'other@weld.com', password: 'x', role: 'welder',
     });
     const sessionId = await createSession(token1);
 
@@ -571,7 +571,7 @@ describe('GET /api/weldscan/export/pdf/download', () => {
   test('returns 403 for another user\'s session', async () => {
     const token1 = await registerAndLogin(welder);
     const token2 = await registerAndLogin({
-      name: 'Thief', email: 'thief@hack.com', password: 'x', role: 'freelancer',
+      name: 'Thief', email: 'thief@hack.com', password: 'x', role: 'welder',
     });
     const sessionId = await createSession(token1);
     await analyzeSession(token1, sessionId);
@@ -645,7 +645,7 @@ describe('GET /api/weldscan/export/dxf/download', () => {
   test('returns 403 for another user\'s session', async () => {
     const token1 = await registerAndLogin(welder);
     const token2 = await registerAndLogin({
-      name: 'Intruder', email: 'intruder@dxf.com', password: 'y', role: 'freelancer',
+      name: 'Intruder', email: 'intruder@dxf.com', password: 'y', role: 'welder',
     });
     const sessionId = await createSession(token1);
     await analyzeSession(token1, sessionId);

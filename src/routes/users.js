@@ -15,8 +15,8 @@ router.post('/register', async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ error: 'name, email, password, and role are required' });
     }
-    if (!['freelancer', 'client', 'shipper', 'carrier', 'driver', 'admin'].includes(role)) {
-      return res.status(400).json({ error: 'role must be freelancer, client, shipper, carrier, driver, or admin' });
+    if (!['welder', 'fabricator', 'shop_owner', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'role must be welder, fabricator, shop_owner, or admin' });
     }
 
     // Check duplicate email
@@ -96,13 +96,13 @@ router.put('/me', authenticate, async (req, res) => {
   }
 });
 
-// POST /me/documents — submit insurance/MC/DOT documents for AI verification (Component 3)
-// Simulates an AI document scanner (e.g. Google Cloud Vision) that verifies carrier credentials.
+// POST /me/documents — submit welding cert/safety documents for AI verification
+// Simulates an AI document scanner that verifies core credential fields.
 // All required fields present → instantly marked 'verified'; otherwise 'pending'.
 router.post('/me/documents', authenticate, async (req, res) => {
   try {
-    if (!['carrier', 'driver'].includes(req.user.role)) {
-      return res.status(403).json({ error: 'Only carriers and drivers can submit verification documents' });
+    if (!['welder', 'fabricator'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Only welders and fabricators can submit verification documents' });
     }
 
     const { insuranceUrl, mcNumber, dotNumber } = req.body;
@@ -131,11 +131,11 @@ router.post('/me/documents', authenticate, async (req, res) => {
   }
 });
 
-// GET /me/documents — get current verification status (Component 3)
+// GET /me/documents — get current verification status
 router.get('/me/documents', authenticate, async (req, res) => {
   try {
-    if (!['carrier', 'driver'].includes(req.user.role)) {
-      return res.status(403).json({ error: 'Only carriers and drivers can view verification documents' });
+    if (!['welder', 'fabricator'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Only welders and fabricators can view verification documents' });
     }
 
     const doc = await db.collection('users').doc(req.user.id).get();

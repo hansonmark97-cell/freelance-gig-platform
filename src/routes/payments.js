@@ -10,8 +10,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2023-10-16',
 });
 
-// POST /intent — create Stripe PaymentIntent (client only)
-router.post('/intent', authenticate, requireRole('client'), async (req, res) => {
+// POST /intent — create Stripe PaymentIntent (shop owner only)
+router.post('/intent', authenticate, requireRole('shop_owner'), async (req, res) => {
   try {
     const { amountUsd } = req.body;
     if (!amountUsd || amountUsd <= 0) {
@@ -19,18 +19,18 @@ router.post('/intent', authenticate, requireRole('client'), async (req, res) => 
     }
 
     const platformFeeUsd = +(amountUsd * PLATFORM_FEE_RATE).toFixed(2);
-    const freelancerPayoutUsd = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
+    const welderPayoutUsd = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amountUsd * 100),
       currency: 'usd',
-      metadata: { platformFeeUsd, freelancerPayoutUsd },
+      metadata: { platformFeeUsd, welderPayoutUsd },
     });
 
     return res.status(201).json({
       clientSecret: paymentIntent.client_secret,
       platformFeeUsd,
-      freelancerPayoutUsd,
+      welderPayoutUsd,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

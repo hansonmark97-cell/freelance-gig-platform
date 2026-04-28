@@ -30,22 +30,22 @@ async function registerAndLogin(user) {
 }
 
 describe('Payments API', () => {
-  const client = { name: 'Client', email: 'client@example.com', password: 'pass123', role: 'client' };
-  const freelancer = { name: 'Freelancer', email: 'fl@example.com', password: 'pass456', role: 'freelancer' };
+  const shopOwner = { name: 'Shop Owner', email: 'owner@example.com', password: 'pass123', role: 'shop_owner' };
+  const welder = { name: 'Welder', email: 'welder@example.com', password: 'pass456', role: 'welder' };
 
-  test('POST /api/payments/intent - client can create payment intent', async () => {
-    const token = await registerAndLogin(client);
+  test('POST /api/payments/intent - shop owner can create payment intent', async () => {
+    const token = await registerAndLogin(shopOwner);
     const amountUsd = 100;
 
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({ amountUsd });
     expect(res.status).toBe(201);
     expect(res.body.clientSecret).toBeDefined();
     expect(res.body.platformFeeUsd).toBeDefined();
-    expect(res.body.freelancerPayoutUsd).toBeDefined();
+    expect(res.body.welderPayoutUsd).toBeDefined();
   });
 
   test('POST /api/payments/intent - verify fee calculation', async () => {
-    const token = await registerAndLogin(client);
+    const token = await registerAndLogin(shopOwner);
     const amountUsd = 100;
 
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({ amountUsd });
@@ -55,21 +55,21 @@ describe('Payments API', () => {
     const expectedPayout = +(amountUsd * (1 - PLATFORM_FEE_RATE)).toFixed(2);
 
     expect(res.body.platformFeeUsd).toBe(expectedFee);
-    expect(res.body.freelancerPayoutUsd).toBe(expectedPayout);
-    expect(res.body.platformFeeUsd + res.body.freelancerPayoutUsd).toBeCloseTo(amountUsd, 5);
+    expect(res.body.welderPayoutUsd).toBe(expectedPayout);
+    expect(res.body.platformFeeUsd + res.body.welderPayoutUsd).toBeCloseTo(amountUsd, 5);
   });
 
   test('POST /api/payments/intent - verify 9% platform fee rate', async () => {
-    const token = await registerAndLogin(client);
+    const token = await registerAndLogin(shopOwner);
 
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({ amountUsd: 200 });
     expect(res.status).toBe(201);
     expect(res.body.platformFeeUsd).toBe(18); // 9% of 200
-    expect(res.body.freelancerPayoutUsd).toBe(182); // 91% of 200
+    expect(res.body.welderPayoutUsd).toBe(182); // 91% of 200
   });
 
-  test('POST /api/payments/intent - freelancer cannot create payment intent', async () => {
-    const token = await registerAndLogin(freelancer);
+  test('POST /api/payments/intent - welder cannot create payment intent', async () => {
+    const token = await registerAndLogin(welder);
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({ amountUsd: 100 });
     expect(res.status).toBe(403);
   });
@@ -80,13 +80,13 @@ describe('Payments API', () => {
   });
 
   test('POST /api/payments/intent - invalid amount returns 400', async () => {
-    const token = await registerAndLogin(client);
+    const token = await registerAndLogin(shopOwner);
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({ amountUsd: -50 });
     expect(res.status).toBe(400);
   });
 
   test('POST /api/payments/intent - missing amount returns 400', async () => {
-    const token = await registerAndLogin(client);
+    const token = await registerAndLogin(shopOwner);
     const res = await request(app).post('/api/payments/intent').set('Authorization', `Bearer ${token}`).send({});
     expect(res.status).toBe(400);
   });
