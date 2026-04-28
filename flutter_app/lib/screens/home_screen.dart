@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'camera_screen.dart';
+import 'draw_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,14 +38,14 @@ class HomeScreen extends StatelessWidget {
               ),
               const Spacer(),
 
-              // New Project button
+              // New Project button (photo mode)
               FilledButton.icon(
                 icon: const Icon(Icons.add_a_photo_rounded, size: 28),
                 label: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 14),
                   child: Text(
-                    'NEW PROJECT',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                    'NEW PROJECT (PHOTO)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5),
                   ),
                 ),
                 style: FilledButton.styleFrom(
@@ -57,6 +58,28 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const CameraScreen()),
                 ),
               ),
+              const SizedBox(height: 12),
+
+              // Draw Shape button (draw mode)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.gesture_rounded, size: 26),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 13),
+                  child: Text(
+                    'DRAW SHAPE  →  3D BLUEPRINT',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: cs.secondary,
+                  side: BorderSide(color: cs.secondary, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DrawScreen()),
+                ),
+              ),
               const SizedBox(height: 16),
 
               // Feature chips
@@ -65,6 +88,7 @@ class HomeScreen extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: const [
+                  _FeatureChip(label: '✏️ Draw Mode'),
                   _FeatureChip(label: '📐 Auto Dimensions'),
                   _FeatureChip(label: '🔩 Kerf Adjust'),
                   _FeatureChip(label: '📄 PDF Export'),

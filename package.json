@@ -12,6 +12,7 @@
     "express-rate-limit": "^7.5.1",
     "firebase-admin": "^13.0.0",
     "jsonwebtoken": "^9.0.2",
+    "pdfkit": "^0.18.0",
     "stripe": "^14.21.0"
   },
   "devDependencies": {

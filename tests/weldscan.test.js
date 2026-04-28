@@ -38,6 +38,38 @@ jest.mock('stripe', () =>
   }))
 );
 
+// --------------------------------------------------------------------------
+// Mock PDFKit — return a minimal valid PDF buffer so tests don't need
+// to render a full document.
+// --------------------------------------------------------------------------
+jest.mock('pdfkit', () => {
+  const { EventEmitter } = require('events');
+  return jest.fn().mockImplementation(() => {
+    const emitter = new EventEmitter();
+    const doc = {
+      ...emitter,
+      fontSize: jest.fn().mockReturnThis(),
+      font: jest.fn().mockReturnThis(),
+      text: jest.fn().mockReturnThis(),
+      moveDown: jest.fn().mockReturnThis(),
+      moveTo: jest.fn().mockReturnThis(),
+      lineTo: jest.fn().mockReturnThis(),
+      stroke: jest.fn().mockReturnThis(),
+      strokeColor: jest.fn().mockReturnThis(),
+      lineWidth: jest.fn().mockReturnThis(),
+      addPage: jest.fn().mockReturnThis(),
+      on: emitter.on.bind(emitter),
+      end: jest.fn().mockImplementation(function () {
+        // Emit minimal PDF-like bytes
+        emitter.emit('data', Buffer.from('%PDF-1.4 mock'));
+        emitter.emit('end');
+      }),
+      y: 100,
+    };
+    return doc;
+  });
+});
+
 beforeEach(() => {
   firestoreMock.reset();
 });
@@ -494,5 +526,141 @@ describe('WeldScan constants', () => {
 
   test('WELDSCAN_DXF_PRICE_USD is 9.99', () => {
     expect(WELDSCAN_DXF_PRICE_USD).toBe(9.99);
+  });
+});
+
+// --------------------------------------------------------------------------
+// GET /api/weldscan/export/pdf/download
+// --------------------------------------------------------------------------
+describe('GET /api/weldscan/export/pdf/download', () => {
+  test('returns 200 with PDF content-type for analyzed session', async () => {
+    const token = await registerAndLogin(welder);
+    const sessionId = await createSession(token);
+    await analyzeSession(token, sessionId);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/pdf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/pdf/);
+    // Body should start with %PDF (our mock emits that prefix)
+    expect(res.body.toString()).toContain('%PDF');
+  });
+
+  test('returns 400 when session is not yet analyzed', async () => {
+    const token = await registerAndLogin(welder);
+    const sessionId = await createSession(token);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/pdf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(400);
+  });
+
+  test('returns 404 for non-existent session', async () => {
+    const token = await registerAndLogin(welder);
+    const res = await request(app)
+      .get('/api/weldscan/export/pdf/download?sessionId=ghost-session')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  test('returns 403 for another user\'s session', async () => {
+    const token1 = await registerAndLogin(welder);
+    const token2 = await registerAndLogin({
+      name: 'Thief', email: 'thief@hack.com', password: 'x', role: 'freelancer',
+    });
+    const sessionId = await createSession(token1);
+    await analyzeSession(token1, sessionId);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/pdf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token2}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  test('returns 400 for missing sessionId param', async () => {
+    const token = await registerAndLogin(welder);
+    const res = await request(app)
+      .get('/api/weldscan/export/pdf/download')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(400);
+  });
+
+  test('returns 401 without auth', async () => {
+    const res = await request(app)
+      .get('/api/weldscan/export/pdf/download?sessionId=any');
+
+    expect(res.status).toBe(401);
+  });
+});
+
+// --------------------------------------------------------------------------
+// GET /api/weldscan/export/dxf/download
+// --------------------------------------------------------------------------
+describe('GET /api/weldscan/export/dxf/download', () => {
+  test('returns 200 with DXF content and correct content-type', async () => {
+    const token = await registerAndLogin(welder);
+    const sessionId = await createSession(token);
+    await analyzeSession(token, sessionId);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/dxf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/dxf/);
+    // DXF must start with the SECTION header and end with EOF marker
+    const body = res.text;
+    expect(body).toContain('SECTION');
+    expect(body).toContain('ENTITIES');
+    expect(body).toContain('EOF');
+  });
+
+  test('returns 400 when session is not analyzed', async () => {
+    const token = await registerAndLogin(welder);
+    const sessionId = await createSession(token);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/dxf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(400);
+  });
+
+  test('returns 404 for non-existent session', async () => {
+    const token = await registerAndLogin(welder);
+    const res = await request(app)
+      .get('/api/weldscan/export/dxf/download?sessionId=ghost-session')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  test('returns 403 for another user\'s session', async () => {
+    const token1 = await registerAndLogin(welder);
+    const token2 = await registerAndLogin({
+      name: 'Intruder', email: 'intruder@dxf.com', password: 'y', role: 'freelancer',
+    });
+    const sessionId = await createSession(token1);
+    await analyzeSession(token1, sessionId);
+
+    const res = await request(app)
+      .get(`/api/weldscan/export/dxf/download?sessionId=${sessionId}`)
+      .set('Authorization', `Bearer ${token2}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  test('returns 401 without auth', async () => {
+    const res = await request(app)
+      .get('/api/weldscan/export/dxf/download?sessionId=any');
+
+    expect(res.status).toBe(401);
   });
 });

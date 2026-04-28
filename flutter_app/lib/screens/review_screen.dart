@@ -6,15 +6,25 @@ import '../widgets/weld_symbol_picker.dart';
 import 'export_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
-  final File imageFile;
+  /// The captured photo. Null when coming from DrawScreen (draw mode).
+  final File? imageFile;
   final String sessionId;
   final double ppi;
 
+  /// Pre-computed analysis result (draw mode — avoids a second API call).
+  final Map<String, dynamic>? preloadedAnalysis;
+
+  /// Polygon vertices in world-inch coordinates (draw mode only).
+  /// When provided, the 3D viewer shows the assembled shape instead of bars.
+  final List<Offset>? polygonPointsIn;
+
   const ReviewScreen({
     super.key,
-    required this.imageFile,
+    this.imageFile,
     required this.sessionId,
     required this.ppi,
+    this.preloadedAnalysis,
+    this.polygonPointsIn,
   });
 
   @override
@@ -45,7 +55,12 @@ class _ReviewScreenState extends State<ReviewScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _analyze();
+    if (widget.preloadedAnalysis != null) {
+      // Draw mode: analysis already done, no additional API call needed.
+      _analysisResult = widget.preloadedAnalysis;
+    } else {
+      _analyze();
+    }
   }
 
   @override
@@ -61,8 +76,9 @@ class _ReviewScreenState extends State<ReviewScreen>
     });
     try {
       final api = ApiService();
+      // Photo mode: send the image to the backend for analysis.
       final result = await api.analyze(
-        imageFile: widget.imageFile,
+        imageFile: widget.imageFile!,
         sessionId: widget.sessionId,
         ppi: widget.ppi,
         thicknessMm: _thicknessMm,
@@ -217,6 +233,7 @@ class _ReviewScreenState extends State<ReviewScreen>
                 child: ThreeDViewer(
                   cutList: typedCutList,
                   thicknessMm: _thicknessMm,
+                  polygonPointsIn: widget.polygonPointsIn,
                 ),
               ),
 

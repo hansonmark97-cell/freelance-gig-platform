@@ -15,6 +15,8 @@ const {
   filletCrossSection,
   buildCutList,
 } = require('../weldscan/calculators');
+const { generatePdfBlueprint } = require('../weldscan/pdf_generator');
+const { generateDxf } = require('../weldscan/dxf_generator');
 const { WELDSCAN_PDF_PRICE_USD, WELDSCAN_DXF_PRICE_USD } = require('../constants');
 
 const router = express.Router();
@@ -164,10 +166,11 @@ router.post('/analyze', authenticate, async (req, res) => {
       },
     };
 
-    // Persist the analysis so exports can reference it later
+    // Persist the analysis and raw segments so download endpoints can generate files
     await db.collection('weldscan_sessions').doc(sessionId).update({
       status: 'analyzed',
       analysis: result,
+      segments,           // raw [{lengthPx, startPoint, endPoint}] needed for DXF export
     });
 
     return res.status(200).json(result);
@@ -280,6 +283,80 @@ router.post('/payment/intent', authenticate, async (req, res) => {
       amountUsd: Number(amountUsd),
       exportType,
     });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/weldscan/export/pdf/download?sessionId=...
+// Generate and stream the PDF blueprint for an analyzed session.
+// Requires auth; client should call only after successful Stripe payment.
+// ---------------------------------------------------------------------------
+router.get('/export/pdf/download', authenticate, async (req, res) => {
+  try {
+    const { sessionId } = req.query;
+    if (!sessionId) {
+      return res.status(400).json({ error: 'sessionId query param is required' });
+    }
+
+    const sessionDoc = await db.collection('weldscan_sessions').doc(sessionId).get();
+    if (!sessionDoc.exists) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    const session = sessionDoc.data();
+    if (session.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    if (session.status !== 'analyzed' || !session.analysis) {
+      return res.status(400).json({ error: 'Session must be analyzed before download' });
+    }
+
+    const { cutList, summary, welderCalcs } = session.analysis;
+    const pdfBuffer = await generatePdfBlueprint(cutList, summary, welderCalcs);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="weldscan_${sessionId}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+    return res.send(pdfBuffer);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/weldscan/export/dxf/download?sessionId=...
+// Generate and stream a CNC-ready DXF file for an analyzed session.
+// ---------------------------------------------------------------------------
+router.get('/export/dxf/download', authenticate, async (req, res) => {
+  try {
+    const { sessionId } = req.query;
+    if (!sessionId) {
+      return res.status(400).json({ error: 'sessionId query param is required' });
+    }
+
+    const sessionDoc = await db.collection('weldscan_sessions').doc(sessionId).get();
+    if (!sessionDoc.exists) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    const session = sessionDoc.data();
+    if (session.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+    if (session.status !== 'analyzed' || !session.segments) {
+      return res.status(400).json({ error: 'Session must be analyzed before download' });
+    }
+
+    const { ppi } = session;
+    const dxfString = generateDxf(session.segments, ppi);
+
+    res.set({
+      'Content-Type': 'application/dxf',
+      'Content-Disposition': `attachment; filename="weldscan_${sessionId}.dxf"`,
+    });
+    return res.send(dxfString);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
