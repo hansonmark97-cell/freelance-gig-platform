@@ -16,31 +16,40 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
-  double _roll = 0.0;   // tilt left/right
-  double _pitch = 0.0;  // tilt forward/back
+  bool _isSwitching = false;
+  int _cameraIndex = 0; // 0 = rear, 1 = front
+  double _roll = 0.0;
+  double _pitch = 0.0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initCamera();
+    _initCamera(_cameraIndex);
     _listenAccelerometer();
   }
 
-  Future<void> _initCamera() async {
+  Future<void> _initCamera(int index) async {
     _cameras = await availableCameras();
     if (_cameras == null || _cameras!.isEmpty) return;
-    _controller = CameraController(_cameras!.first, ResolutionPreset.high);
+    final idx = index.clamp(0, _cameras!.length - 1);
+    _controller = CameraController(_cameras![idx], ResolutionPreset.high);
     await _controller!.initialize();
-    if (mounted) setState(() => _isInitialized = true);
+    if (mounted) setState(() { _isInitialized = true; _isSwitching = false; });
+  }
+
+  Future<void> _switchCamera() async {
+    if (_cameras == null || _cameras!.length < 2 || _isSwitching) return;
+    setState(() { _isInitialized = false; _isSwitching = true; });
+    await _controller?.dispose();
+    _controller = null;
+    _cameraIndex = (_cameraIndex + 1) % _cameras!.length;
+    await _initCamera(_cameraIndex);
   }
 
   void _listenAccelerometer() {
     accelerometerEventStream().listen((AccelerometerEvent e) {
-      setState(() {
-        _roll = e.x;
-        _pitch = e.y;
-      });
+      if (mounted) setState(() { _roll = e.x; _pitch = e.y; });
     });
   }
 
@@ -55,15 +64,13 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = _controller;
     if (state == AppLifecycleState.paused) {
-      // Release camera when app moves to the background.
       if (controller != null && controller.value.isInitialized) {
         setState(() => _isInitialized = false);
         controller.dispose();
         _controller = null;
       }
     } else if (state == AppLifecycleState.resumed) {
-      // Re-acquire camera when app comes back to foreground.
-      _initCamera();
+      _initCamera(_cameraIndex);
     }
   }
 
@@ -73,9 +80,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     if (!mounted) return;
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => CalibrationScreen(imageFile: File(file.path)),
-      ),
+      MaterialPageRoute(builder: (_) => CalibrationScreen(imageFile: File(file.path))),
     );
   }
 
@@ -85,6 +90,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     if (deviation < 1.0) return Colors.orangeAccent;
     return Colors.redAccent;
   }
+
+  bool get _hasFrontCamera => (_cameras?.length ?? 0) > 1;
+  bool get _isUsingFront => _cameraIndex != 0;
 
   @override
   Widget build(BuildContext context) {
@@ -99,16 +107,14 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           if (_isInitialized && _controller != null)
             CameraPreview(_controller!)
           else
-            const Center(child: CircularProgressIndicator()),
+            Center(child: CircularProgressIndicator(color: cs.primary)),
 
           // Grid overlay
           const GridOverlay(),
 
           // Level indicator
           Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
+            top: 50, left: 0, right: 0,
             child: Column(
               children: [
                 Text(
@@ -122,17 +128,28 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
 
+          // FRONT / REAR badge
+          Positioned(
+            top: 46, right: 64,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.black54, borderRadius: BorderRadius.circular(12)),
+              child: Text(
+                _isUsingFront ? '📸 FRONT' : '📷 REAR',
+                style: TextStyle(color: cs.primary, fontSize: 11,
+                    fontWeight: FontWeight.bold, letterSpacing: 1.5),
+              ),
+            ),
+          ),
+
           // Instruction overlay
           Positioned(
-            bottom: 120,
-            left: 24,
-            right: 24,
+            bottom: 130, left: 24, right: 24,
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  color: Colors.black54, borderRadius: BorderRadius.circular(8)),
               child: const Text(
                 'Place a 12" square or ruler next to the part, then capture.',
                 textAlign: TextAlign.center,
@@ -141,32 +158,59 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             ),
           ),
 
-          // Capture button
+          // Capture + flip row
           Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: _capture,
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: cs.primary, width: 4),
-                    color: cs.primary.withOpacity(0.15),
+            bottom: 40, left: 0, right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Flip camera button
+                if (_hasFrontCamera)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 32),
+                    child: GestureDetector(
+                      onTap: _switchCamera,
+                      child: Container(
+                        width: 52, height: 52,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black54,
+                          border: Border.all(color: Colors.white54, width: 1.5),
+                        ),
+                        child: _isSwitching
+                            ? const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.flip_camera_ios_rounded,
+                                color: Colors.white, size: 26),
+                      ),
+                    ),
                   ),
-                  child: Icon(Icons.camera_alt_rounded, color: cs.primary, size: 36),
+
+                // Shutter button
+                GestureDetector(
+                  onTap: _capture,
+                  child: Container(
+                    width: 72, height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: cs.primary, width: 4),
+                      color: cs.primary.withOpacity(0.15),
+                    ),
+                    child: Icon(Icons.camera_alt_rounded, color: cs.primary, size: 36),
+                  ),
                 ),
-              ),
+
+                // Spacer to balance layout when flip button is shown
+                if (_hasFrontCamera) const SizedBox(width: 84),
+              ],
             ),
           ),
 
           // Back button
           Positioned(
-            top: 44,
-            left: 12,
+            top: 44, left: 12,
             child: IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),

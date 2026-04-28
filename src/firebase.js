@@ -8,7 +8,7 @@ if (process.env.NODE_ENV === 'test') {
       credential: process.env.GOOGLE_APPLICATION_CREDENTIALS
         ? admin.credential.applicationDefault()
         : admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}')),
-      projectId: process.env.FIREBASE_PROJECT_ID || 'freelance-gig-platform',
+      projectId: process.env.FIREBASE_PROJECT_ID || 'weldscan-platform',
     });
   }
   db = admin.firestore();

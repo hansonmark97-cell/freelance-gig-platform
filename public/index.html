@@ -3,2065 +3,589 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FreelanceHub</title>
+  <title>WeldScan Platform</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --primary: #4f46e5;
-      --primary-dark: #4338ca;
-      --primary-light: #eef2ff;
-      --secondary: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --text: #111827;
-      --text-muted: #6b7280;
-      --border: #e5e7eb;
-      --bg: #f9fafb;
-      --white: #ffffff;
+      --orange: #FF6B00;
+      --blue:   #00C8FF;
+      --dark:   #0D0D0D;
+      --surface:#1A1A1A;
+      --card:   #222222;
+      --border: #333333;
+      --text:   #F0F0F0;
+      --muted:  #888888;
       --radius: 8px;
-      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
-      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
-      --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-    /* NAV */
-    nav { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 60px; display: flex; align-items: center; gap: 1rem; }
-    .nav-logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); cursor: pointer; text-decoration: none; flex-shrink: 0; }
-    .nav-logo span { color: var(--secondary); }
+    /* ── NAV ─────────────────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 1.5rem; height: 58px;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .nav-logo {
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--orange); letter-spacing: 2px;
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--blue); }
     .nav-links { display: flex; gap: .25rem; flex: 1; }
-    .nav-links button { background: none; border: none; padding: .5rem .75rem; border-radius: var(--radius); cursor: pointer; font-size: .9rem; color: var(--text-muted); font-weight: 500; transition: all .15s; }
-    .nav-links button:hover, .nav-links button.active { background: var(--primary-light); color: var(--primary); }
-    .nav-actions { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
-    .nav-user { font-size: .875rem; color: var(--text-muted); display: flex; align-items: center; gap: .5rem; }
-    .nav-user strong { color: var(--text); }
-    .badge { font-size: .7rem; font-weight: 600; padding: .15rem .5rem; border-radius: 999px; text-transform: uppercase; }
-    .badge-freelancer { background: #dbeafe; color: #1d4ed8; }
-    .badge-client { background: #dcfce7; color: #15803d; }
-    .badge-shipper { background: #ede9fe; color: #5b21b6; }
-    .badge-carrier { background: #fef3c7; color: #92400e; }
-    .badge-driver { background: #d1fae5; color: #065f46; }
-    .badge-admin { background: #fee2e2; color: #991b1b; }
+    .nav-links a {
+      padding: .45rem .9rem; border-radius: var(--radius);
+      font-size: .85rem; color: var(--muted); font-weight: 600;
+      text-decoration: none; letter-spacing: 1px; transition: all .15s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255,107,0,.12); color: var(--orange);
+    }
+    .nav-badge {
+      font-size: .7rem; padding: .2rem .6rem;
+      border-radius: 999px; font-weight: 700; letter-spacing: 1px;
+      background: rgba(255,107,0,.15); color: var(--orange);
+      border: 1px solid rgba(255,107,0,.3);
+    }
 
-    /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.1rem; border-radius: var(--radius); font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; text-decoration: none; }
-    .btn-primary { background: var(--primary); color: var(--white); }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--bg); }
-    .btn-success { background: var(--secondary); color: var(--white); }
-    .btn-success:hover { background: #059669; }
-    .btn-danger { background: var(--danger); color: var(--white); }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-ghost { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
-    .btn-ghost:hover { background: var(--primary-light); }
-    .btn-sm { padding: .35rem .7rem; font-size: .8rem; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    /* ── HERO ────────────────────────────────────────────────── */
+    .hero {
+      max-width: 1100px; margin: 0 auto;
+      padding: 5rem 1.5rem 3rem;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 1.5rem;
+    }
+    .hero-icon { font-size: 4rem; }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900; letter-spacing: 3px;
+      color: var(--orange);
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p {
+      font-size: 1.1rem; color: var(--muted);
+      max-width: 560px; line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .75rem 1.6rem; border-radius: var(--radius);
+      font-size: .9rem; font-weight: 700; letter-spacing: 1.5px;
+      cursor: pointer; border: none; text-decoration: none; transition: all .15s;
+    }
+    .btn-primary { background: var(--orange); color: #000; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-outline {
+      background: transparent; color: var(--blue);
+      border: 2px solid var(--blue);
+    }
+    .btn-outline:hover { background: rgba(0,200,255,.1); }
 
-    /* MAIN */
-    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    /* ── SECTION ─────────────────────────────────────────────── */
+    section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .section-title {
+      font-size: 1.1rem; font-weight: 700; letter-spacing: 2px;
+      color: var(--blue); margin-bottom: 1.5rem;
+      border-left: 3px solid var(--orange); padding-left: .75rem;
+    }
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      max-width: 1100px; margin: 0 auto;
+    }
 
-    /* HERO */
-    .hero { background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); border-radius: 16px; padding: 4rem 2rem; text-align: center; color: white; margin-bottom: 3rem; }
-    .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
-    .hero p { font-size: 1.1rem; opacity: .9; max-width: 500px; margin: 0 auto 2rem; }
-    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-    .hero-actions .btn { padding: .75rem 1.5rem; font-size: 1rem; }
-    .btn-white { background: white; color: var(--primary); }
-    .btn-white:hover { background: #f3f4f6; }
-    .btn-outline-white { background: transparent; color: white; border: 2px solid rgba(255,255,255,.6); }
-    .btn-outline-white:hover { background: rgba(255,255,255,.1); }
+    /* ── FEATURE GRID ────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .feature-card .icon { font-size: 1.8rem; margin-bottom: .6rem; }
+    .feature-card h3 {
+      font-size: .95rem; font-weight: 700; color: var(--orange);
+      letter-spacing: 1px; margin-bottom: .4rem;
+    }
+    .feature-card p { font-size: .82rem; color: var(--muted); line-height: 1.6; }
 
-    /* SECTION */
-    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-    .section-header h2 { font-size: 1.5rem; font-weight: 700; }
+    /* ── FLOW STEPS ──────────────────────────────────────────── */
+    .flow-steps {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .flow-step {
+      display: flex; align-items: flex-start; gap: 1rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      background: var(--orange); color: #000;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: .85rem;
+    }
+    .flow-step h4 { font-size: .9rem; color: var(--text); font-weight: 700; margin-bottom: .25rem; }
+    .flow-step p  { font-size: .8rem; color: var(--muted); line-height: 1.5; }
 
-    /* FILTERS */
-    .filters { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    .filters select, .filters input { padding: .5rem .75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .875rem; background: var(--white); color: var(--text); outline: none; }
-    .filters select:focus, .filters input:focus { border-color: var(--primary); }
+    /* ── PRICING ─────────────────────────────────────────────── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .price-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+    }
+    .price-card.featured { border-color: var(--orange); }
+    .price-card .price {
+      font-size: 2rem; font-weight: 900; color: var(--orange);
+      margin: .5rem 0;
+    }
+    .price-card .price sup { font-size: 1rem; }
+    .price-card h3 { font-size: .9rem; letter-spacing: 1.5px; color: var(--blue); }
+    .price-card ul {
+      list-style: none; margin: 1rem 0 0;
+      text-align: left; display: flex; flex-direction: column; gap: .4rem;
+    }
+    .price-card ul li { font-size: .8rem; color: var(--muted); }
+    .price-card ul li::before { content: '✔  '; color: var(--orange); }
 
-    /* GRID */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+    /* ── CALC DEMO ───────────────────────────────────────────── */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .calc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .calc-card h3 { font-size: .9rem; color: var(--orange); font-weight: 700; letter-spacing: 1px; margin-bottom: .9rem; }
+    label { display: block; font-size: .75rem; color: var(--muted); margin-bottom: .25rem; letter-spacing: .5px; }
+    input[type=number] {
+      width: 100%; padding: .5rem .75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: inherit; font-size: .85rem; margin-bottom: .75rem;
+    }
+    input[type=number]:focus { outline: 1px solid var(--orange); }
+    .calc-result {
+      margin-top: .5rem;
+      padding: .6rem .9rem;
+      background: rgba(255,107,0,.08);
+      border: 1px solid rgba(255,107,0,.2);
+      border-radius: var(--radius);
+      font-size: .85rem; color: var(--blue); font-weight: 700;
+      min-height: 38px;
+    }
 
-    /* CARD */
-    .card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; box-shadow: var(--shadow); transition: box-shadow .15s, transform .15s; cursor: pointer; }
-    .card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; }
-    .card h3 { font-size: 1rem; font-weight: 600; line-height: 1.4; flex: 1; }
-    .card p { font-size: .875rem; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: .75rem; }
-    .card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
-    .price { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
-    .price-budget { color: var(--secondary); }
-    .cat-tag { background: var(--primary-light); color: var(--primary); font-size: .75rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; white-space: nowrap; }
-    .meta { font-size: .75rem; color: var(--text-muted); }
+    /* ── FOOTER ──────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      font-size: .78rem; color: var(--muted);
+    }
+    footer strong { color: var(--orange); }
 
-    /* DETAIL */
-    .detail-page { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start; }
-    @media (max-width: 768px) { .detail-page { grid-template-columns: 1fr; } }
-    .detail-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.75rem; box-shadow: var(--shadow); }
-    .detail-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .75rem; line-height: 1.3; }
-    .detail-meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; font-size: .875rem; color: var(--text-muted); }
-    .detail-meta span { display: flex; align-items: center; gap: .3rem; }
-    .detail-body { font-size: .95rem; line-height: 1.7; color: #374151; white-space: pre-wrap; margin-bottom: 1.5rem; }
-    .detail-sidebar > * + * { margin-top: 1rem; }
-
-    /* SIDEBAR CARD */
-    .sidebar-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 1.25rem; box-shadow: var(--shadow); }
-    .sidebar-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-    .sidebar-price { font-size: 2rem; font-weight: 800; color: var(--primary); }
-    .sidebar-meta { font-size: .85rem; color: var(--text-muted); margin-bottom: .25rem; }
-    .sidebar-card .btn { width: 100%; justify-content: center; margin-top: .75rem; }
-
-    /* FORM */
-    .form-page { max-width: 640px; margin: 0 auto; }
-    .form-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 2rem; box-shadow: var(--shadow); }
-    .form-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: .4rem; color: var(--text); }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: .6rem .85rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: .9rem; font-family: inherit; outline: none; transition: border .15s; background: var(--white); }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
-    .form-group textarea { resize: vertical; min-height: 100px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-actions { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; }
-    .form-error { color: var(--danger); font-size: .825rem; margin-top: .35rem; }
-
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    .modal { background: var(--white); border-radius: 12px; padding: 2rem; width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); }
-    .modal h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: .5rem; }
-    .modal p { color: var(--text-muted); font-size: .875rem; margin-bottom: 1.5rem; }
-    .modal-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
-    .modal-tab { flex: 1; padding: .6rem; background: none; border: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
-    .modal-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .modal-close { float: right; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); margin-top: -.5rem; }
-
-    /* TABS */
-    .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; gap: .25rem; }
-    .tab { padding: .6rem 1rem; background: none; border: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-    /* BIDS LIST */
-    .bid-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .75rem; display: flex; align-items: flex-start; gap: 1rem; }
-    .bid-body { flex: 1; }
-    .bid-amount { font-size: 1.1rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
-    .bid-message { font-size: .875rem; color: var(--text-muted); margin-top: .3rem; line-height: 1.5; }
-    .bid-meta { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
-    .bid-actions { display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; flex-shrink: 0; }
-    .status-badge { font-size: .75rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-accepted { background: #d1fae5; color: #065f46; }
-    .status-rejected { background: #fee2e2; color: #991b1b; }
-    .status-open { background: #dbeafe; color: #1e40af; }
-    .status-booked { background: #ede9fe; color: #5b21b6; }
-    .status-dispatched { background: #fef3c7; color: #92400e; }
-    .status-delivered { background: #d1fae5; color: #065f46; }
-    .status-draft { background: #f3f4f6; color: #374151; }
-    .status-sent { background: #dbeafe; color: #1e40af; }
-    .status-paid { background: #d1fae5; color: #065f46; }
-    .status-in_progress { background: #ede9fe; color: #5b21b6; }
-    .status-completed { background: #d1fae5; color: #065f46; }
-    .status-cancelled { background: #f3f4f6; color: #6b7280; }
-    .status-active { background: #d1fae5; color: #065f46; }
-    .status-deleted { background: #fee2e2; color: #991b1b; }
-
-    /* REVIEWS */
-    .review-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .75rem; }
-    .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
-    .stars { color: var(--warning); font-size: .95rem; letter-spacing: .05rem; }
-    .review-comment { font-size: .875rem; color: var(--text-muted); line-height: 1.5; }
-
-    /* ALERTS */
-    .alert { padding: .85rem 1rem; border-radius: var(--radius); font-size: .875rem; margin-bottom: 1rem; }
-    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-    .alert-info { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #c7d2fe; }
-
-    /* EMPTY */
-    .empty { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
-    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .empty h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: .5rem; color: var(--text); }
-    .empty p { font-size: .875rem; }
-
-    /* LOADING */
-    .loading { text-align: center; padding: 3rem; color: var(--text-muted); font-size: .9rem; }
-
-    /* AVATAR */
-    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-    /* DIVIDER */
-    hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
-
-    /* RATING STARS */
-    .star-input { display: flex; gap: .25rem; }
-    .star-input span { font-size: 1.5rem; cursor: pointer; color: #d1d5db; transition: color .1s; }
-    .star-input span.filled { color: var(--warning); }
-
-    /* PROFILE */
-    .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--primary); color: white; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
-    .profile-info h2 { font-size: 1.5rem; font-weight: 700; }
-    .profile-info p { color: var(--text-muted); font-size: .9rem; margin-top: .25rem; }
-
-    /* HIDDEN */
-    .hidden { display: none !important; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* RESPONSIVE */
-    @media (max-width: 640px) {
-      .hero h1 { font-size: 1.75rem; }
-      .form-row { grid-template-columns: 1fr; }
-      .bid-item { flex-direction: column; }
-      .bid-actions { flex-direction: row; align-items: center; }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ── NAV ─────────────────────────────────────────────────────────────── -->
 <nav>
   <div class="nav-inner">
-    <a class="nav-logo" onclick="navigate('home')" href="#"><span>Freelance</span>Hub</a>
-    <div class="nav-links" id="nav-links">
-      <button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>
-      <button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>
-    </div>
-    <div class="nav-actions" id="nav-actions">
-      <button class="btn btn-secondary btn-sm" onclick="openAuth('login')">Log In</button>
-      <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Sign Up</button>
-    </div>
+    <a class="nav-logo" href="#">WELD<span>SCAN</span></a>
+    <nav class="nav-links">
+      <a href="#features" class="active">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#calculators">Calculators</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <span class="nav-badge">WELDING PLATFORM</span>
   </div>
 </nav>
 
-<!-- AUTH MODAL -->
-<div class="modal-overlay hidden" id="auth-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeAuth()">✕</button>
-    <div class="modal-tabs">
-      <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
-      <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Sign Up</button>
-    </div>
-
-    <!-- LOGIN FORM -->
-    <form id="login-form" onsubmit="doLogin(event)">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="you@example.com" required />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="Password" required />
-      </div>
-      <div id="login-error" class="alert alert-error hidden"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="login-btn">Log In</button>
-    </form>
-
-    <!-- REGISTER FORM -->
-    <form id="register-form" class="hidden" onsubmit="doRegister(event)">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="reg-name" placeholder="Jane Smith" required />
-        </div>
-        <div class="form-group">
-          <label>I am a</label>
-          <select id="reg-role">
-            <option value="freelancer">Freelancer – Offer skills &amp; services</option>
-            <option value="client">Client – Post jobs &amp; hire freelancers</option>
-            <option value="shipper">Shipper – Post freight loads</option>
-            <option value="carrier">Carrier – Transport goods</option>
-            <option value="driver">Driver – Operate delivery vehicles</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="you@example.com" required />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="reg-password" placeholder="Min 6 characters" minlength="6" required />
-      </div>
-      <div id="register-error" class="alert alert-error hidden"></div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="register-btn">Create Account</button>
-    </form>
+<!-- ── HERO ─────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-icon">🔩</div>
+  <h1>WELDSCAN <span>PLATFORM</span></h1>
+  <p>
+    Photo a metal part, draw a shape with your finger, or pick a stock shape —
+    get an instant 3D blueprint, cut list, and welder calculations.
+  </p>
+  <div class="hero-actions">
+    <a href="#how-it-works" class="btn btn-primary">▶ HOW IT WORKS</a>
+    <a href="#calculators" class="btn btn-outline">⚙ WELDER CALCS</a>
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<main id="app"></main>
+<hr class="divider" />
+
+<!-- ── FEATURES ─────────────────────────────────────────────────────────── -->
+<section id="features">
+  <p class="section-title">FEATURES</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">📷</div>
+      <h3>PHOTO → BLUEPRINT</h3>
+      <p>Photograph any metal part. The CV pipeline auto-detects the contour and converts it into a dimensioned cut list.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">✏️</div>
+      <h3>FINGER-DRAW MODE</h3>
+      <p>Draw any polygon shape by tapping vertices or dragging freehand. Close it and get an instant 3D preview.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔷</div>
+      <h3>STOCK SHAPE LIBRARY</h3>
+      <p>Pick from flat bar, angle iron, square tube, round pipe, I-beam, C-channel and more. Enter length and go.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔄</div>
+      <h3>3D DRAG VIEWER</h3>
+      <p>Single-finger drag to orbit your part in 3D. Pinch to zoom. Dimension callouts on every edge.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📐</div>
+      <h3>FULL CUT LIST</h3>
+      <p>Every piece labeled P1–Pn with exact length (inches &amp; mm), miter angle, and kerf-adjusted dimension.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔧</div>
+      <h3>WELDER CALCULATIONS</h3>
+      <p>Bend deduction, root gap, fillet cross-section, weld volume, heat input, deposition rate and preheat temp.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🗂️</div>
+      <h3>WELD SYMBOLS</h3>
+      <p>Assign AWS-standard symbols (fillet, V-groove, bevel, J-groove, butt, plug) to each joint in the cut list.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📄</div>
+      <h3>PDF BLUEPRINT</h3>
+      <p>Export a print-ready PDF blueprint with cut list, welder calcs, and dimensions. Take it straight to the saw.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⚙️</div>
+      <h3>DXF / CNC EXPORT</h3>
+      <p>Export a CNC-ready DXF vector file compatible with plasma tables, laser cutters, and CAD software.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔩</div>
+      <h3>KERF ADJUSTMENT</h3>
+      <p>Select your cut tool — plasma, laser, or saw — and kerf is automatically subtracted from every piece.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📏</div>
+      <h3>LEVEL INDICATOR</h3>
+      <p>Real-time accelerometer level bar keeps your phone flat while shooting, ensuring accurate pixel calibration.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">💳</div>
+      <h3>PAY PER EXPORT</h3>
+      <p>Free dimensions always. Pay once for PDF or DXF — no subscription, no lock-in. Powered by Stripe.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────────────────── -->
+<section id="how-it-works">
+  <p class="section-title">HOW IT WORKS</p>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div>
+        <h4>CAPTURE OR DRAW</h4>
+        <p>Take a photo of your metal part next to a reference object (ruler, credit card, coin) — or switch to Draw Mode and tap/drag your shape directly on screen.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div>
+        <h4>CALIBRATE SCALE</h4>
+        <p>Tell the app the real-world size of your reference object. The CV engine computes an exact pixels-per-inch constant for your shot.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div>
+        <h4>CONTOUR DETECTION</h4>
+        <p>OpenCV Canny edge detection finds the part outline, the RDP algorithm simplifies it into straight-line segments, and every segment is labeled and measured.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div>
+        <h4>3D REVIEW</h4>
+        <p>Finger-drag the 3D viewer to orbit your extruded part from any angle. Dimension callouts float on every edge. Tap any piece to assign a weld symbol.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div>
+        <h4>ADJUST PARAMETERS</h4>
+        <p>Dial in metal thickness, kerf type, wire diameter, and fillet leg size. Welder calculations update instantly.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div>
+        <h4>EXPORT</h4>
+        <p>Dimensions are always free. Pay $2.99 for a print-ready PDF blueprint or $9.99 for a CNC-ready DXF file. One-time charge, no subscription.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── LIVE CALCULATORS ──────────────────────────────────────────────────── -->
+<section id="calculators">
+  <p class="section-title">LIVE WELDER CALCULATORS</p>
+  <div class="calc-grid">
+
+    <!-- Bend Deduction -->
+    <div class="calc-card">
+      <h3>BEND DEDUCTION</h3>
+      <label>Inside Radius (mm)</label>
+      <input type="number" id="bd-radius" value="10" min="0" oninput="calcBD()">
+      <label>Metal Thickness (mm)</label>
+      <input type="number" id="bd-thick" value="6" min="0.1" oninput="calcBD()">
+      <div class="calc-result" id="bd-result">—</div>
+    </div>
+
+    <!-- Root Gap -->
+    <div class="calc-card">
+      <h3>ROOT GAP &amp; LANDING (AWS D1.1)</h3>
+      <label>Wire Diameter (mm)</label>
+      <input type="number" id="rg-wire" value="0.9" min="0.1" step="0.1" oninput="calcRG()">
+      <label>Metal Thickness (mm)</label>
+      <input type="number" id="rg-thick" value="10" min="0.1" oninput="calcRG()">
+      <div class="calc-result" id="rg-result">—</div>
+    </div>
+
+    <!-- Weld Volume -->
+    <div class="calc-card">
+      <h3>WELD VOLUME (FILLET)</h3>
+      <label>Fillet Leg Size (mm)</label>
+      <input type="number" id="wv-leg" value="8" min="0.1" oninput="calcWV()">
+      <label>Weld Run Length (mm)</label>
+      <input type="number" id="wv-len" value="500" min="1" oninput="calcWV()">
+      <div class="calc-result" id="wv-result">—</div>
+    </div>
+
+    <!-- Heat Input -->
+    <div class="calc-card">
+      <h3>HEAT INPUT (AWS D1.1)</h3>
+      <label>Amps (A)</label>
+      <input type="number" id="hi-amps" value="200" min="1" oninput="calcHI()">
+      <label>Volts (V)</label>
+      <input type="number" id="hi-volts" value="24" min="1" oninput="calcHI()">
+      <label>Travel Speed (in/min)</label>
+      <input type="number" id="hi-speed" value="12" min="0.1" step="0.1" oninput="calcHI()">
+      <div class="calc-result" id="hi-result">—</div>
+    </div>
+
+    <!-- Deposition Rate -->
+    <div class="calc-card">
+      <h3>DEPOSITION RATE (MIG)</h3>
+      <label>Wire Feed Speed (in/min)</label>
+      <input type="number" id="dr-wfs" value="300" min="1" oninput="calcDR()">
+      <label>Wire Diameter (in)</label>
+      <input type="number" id="dr-dia" value="0.035" min="0.01" step="0.001" oninput="calcDR()">
+      <div class="calc-result" id="dr-result">—</div>
+    </div>
+
+    <!-- Preheat -->
+    <div class="calc-card">
+      <h3>PREHEAT TEMPERATURE</h3>
+      <label>Carbon Equivalent (CE)</label>
+      <input type="number" id="ph-ce" value="0.35" min="0" max="1" step="0.01" oninput="calcPH()">
+      <label>Plate Thickness (mm)</label>
+      <input type="number" id="ph-thick" value="25" min="1" oninput="calcPH()">
+      <div class="calc-result" id="ph-result">—</div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── PRICING ───────────────────────────────────────────────────────────── -->
+<section id="pricing">
+  <p class="section-title">PRICING</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <h3>FREE</h3>
+      <div class="price"><sup>$</sup>0</div>
+      <ul>
+        <li>Photo &amp; draw capture</li>
+        <li>3D finger-drag viewer</li>
+        <li>Full cut list (dimensions)</li>
+        <li>All welder calculations</li>
+        <li>Weld symbol assignment</li>
+        <li>Unlimited projects</li>
+      </ul>
+    </div>
+    <div class="price-card featured">
+      <h3>PDF BLUEPRINT</h3>
+      <div class="price"><sup>$</sup>2.99</div>
+      <ul>
+        <li>Everything in Free</li>
+        <li>Dimensioned PDF blueprint</li>
+        <li>Full cut list printed</li>
+        <li>Welder calcs included</li>
+        <li>Print &amp; take to the saw</li>
+        <li>One-time charge</li>
+      </ul>
+    </div>
+    <div class="price-card featured">
+      <h3>DXF / CNC</h3>
+      <div class="price"><sup>$</sup>9.99</div>
+      <ul>
+        <li>Everything in Free</li>
+        <li>CNC-ready DXF vector file</li>
+        <li>Plasma table compatible</li>
+        <li>Laser cutter compatible</li>
+        <li>CAD software compatible</li>
+        <li>One-time charge</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <strong>WELDSCAN PLATFORM</strong> &nbsp;·&nbsp;
+  Photo → Blueprint → Cut List &nbsp;·&nbsp;
+  For welders, by welders
+</footer>
 
 <script>
-/* ===== STATE ===== */
-let state = {
-  view: 'home',
-  params: {},
-  user: null,
-  token: null,
-};
-
-/* ===== INIT ===== */
-(function init() {
-  const saved = localStorage.getItem('flh_token');
-  const savedUser = localStorage.getItem('flh_user');
-  if (saved && savedUser) {
-    state.token = saved;
-    state.user = JSON.parse(savedUser);
-  }
-  renderNav();
-  navigate('home');
-})();
-
-/* ===== NAV ===== */
-function renderNav() {
-  const links = document.getElementById('nav-links');
-  const el = document.getElementById('nav-actions');
-  if (links) links.innerHTML = buildNavLinks();
-  if (state.user) {
-    el.innerHTML = `
-      <div class="nav-user">
-        <strong>${esc(state.user.name)}</strong>
-        <span class="badge badge-${state.user.role}">${state.user.role}</span>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">Dashboard</button>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
-    `;
-  } else {
-    el.innerHTML = `
-      <button class="btn btn-secondary btn-sm" onclick="openAuth('login')">Log In</button>
-      <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Sign Up</button>
-    `;
-  }
-  // Highlight active nav link
-  document.querySelectorAll('.nav-links button').forEach(b => {
-    b.classList.toggle('active', b.dataset.view === state.view);
+  // ── Highlight active nav on scroll ──────────────────────────────────────
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY + 80;
+    navLinks.forEach(a => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target && target.offsetTop <= scrollY && target.offsetTop + target.offsetHeight > scrollY) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        a.classList.add('active');
+      }
+    });
   });
-}
 
-function buildNavLinks() {
-  const role = state.user?.role;
-  const links = [];
-  if (!role) {
-    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
-    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
-    links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
-    return links.join('');
+  // ── Bend Deduction ───────────────────────────────────────────────────────
+  function calcBD() {
+    const r = parseFloat(document.getElementById('bd-radius').value);
+    const t = parseFloat(document.getElementById('bd-thick').value);
+    const el = document.getElementById('bd-result');
+    if (!r || !t || r < 0 || t <= 0) { el.textContent = '—'; return; }
+    const bd = (Math.PI / 2) * (r + t / 3);
+    el.textContent = `Bend Deduction: ${bd.toFixed(3)} mm`;
   }
-  if (['freelancer', 'client'].includes(role)) {
-    links.push(`<button onclick="navigate('gigs')" data-view="gigs">Browse Gigs</button>`);
-    links.push(`<button onclick="navigate('jobs')" data-view="jobs">Browse Jobs</button>`);
+
+  // ── Root Gap ─────────────────────────────────────────────────────────────
+  function calcRG() {
+    const w = parseFloat(document.getElementById('rg-wire').value);
+    const t = parseFloat(document.getElementById('rg-thick').value);
+    const el = document.getElementById('rg-result');
+    if (!w || !t || w <= 0 || t <= 0) { el.textContent = '—'; return; }
+    const gap = w;
+    const land = Math.max(1, t * 0.1);
+    el.textContent = `Root gap: ${gap.toFixed(2)} mm  |  Landing: ${land.toFixed(2)} mm`;
   }
-  if (['shipper', 'carrier', 'driver', 'admin'].includes(role)) {
-    links.push(`<button onclick="navigate('loads')" data-view="loads">Browse Loads</button>`);
+
+  // ── Weld Volume ──────────────────────────────────────────────────────────
+  function calcWV() {
+    const leg = parseFloat(document.getElementById('wv-leg').value);
+    const len = parseFloat(document.getElementById('wv-len').value);
+    const el = document.getElementById('wv-result');
+    if (!leg || !len || leg <= 0 || len <= 0) { el.textContent = '—'; return; }
+    const areaMm2 = 0.5 * leg * leg;
+    const volMm3 = areaMm2 * len;
+    const volCm3 = volMm3 / 1000;
+    const volIn3 = volMm3 / 16387.064;
+    el.textContent = `${volCm3.toFixed(3)} cm³  |  ${volIn3.toFixed(4)} in³`;
   }
-  return links.join('');
-}
 
-/* ===== ROUTING ===== */
-function navigate(view, params = {}) {
-  state.view = view;
-  state.params = params;
-  renderNav();
-  render();
-}
-
-function render() {
-  const app = document.getElementById('app');
-  switch (state.view) {
-    case 'home':      renderHome(app); break;
-    case 'gigs':      renderGigList(app); break;
-    case 'jobs':      renderJobList(app); break;
-    case 'gig':       renderGigDetail(app); break;
-    case 'job':       renderJobDetail(app); break;
-    case 'loads':     renderLoadList(app); break;
-    case 'load':      renderLoadDetail(app); break;
-    case 'create-load': renderCreateLoad(app); break;
-    case 'create-gig': renderCreateGig(app); break;
-    case 'edit-gig':  renderEditGig(app); break;
-    case 'post-job':  renderPostJob(app); break;
-    case 'dashboard': renderDashboard(app); break;
-    case 'profile':   renderProfile(app); break;
-    default:          renderHome(app);
+  // ── Heat Input ───────────────────────────────────────────────────────────
+  function calcHI() {
+    const A = parseFloat(document.getElementById('hi-amps').value);
+    const V = parseFloat(document.getElementById('hi-volts').value);
+    const S = parseFloat(document.getElementById('hi-speed').value);
+    const el = document.getElementById('hi-result');
+    if (!A || !V || !S || S <= 0) { el.textContent = '—'; return; }
+    const hi = (A * V * 60) / (S * 1000);
+    let cls = hi < 35 ? 'LOW' : hi < 65 ? 'MEDIUM' : 'HIGH';
+    el.textContent = `${hi.toFixed(2)} kJ/in  [${cls} heat input]`;
   }
-}
 
-/* ===== API ===== */
-async function api(method, path, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  };
-  if (state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch('/api' + path, opts);
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error((data && data.error) || `HTTP ${res.status}`);
-  return data;
-}
-
-/* ===== AUTH ===== */
-function openAuth(tab) {
-  document.getElementById('auth-modal').classList.remove('hidden');
-  switchAuthTab(tab);
-}
-function closeAuth() {
-  document.getElementById('auth-modal').classList.add('hidden');
-}
-function switchAuthTab(tab) {
-  document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-  document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-}
-async function doLogin(e) {
-  e.preventDefault();
-  const btn = document.getElementById('login-btn');
-  const errEl = document.getElementById('login-error');
-  btn.disabled = true; btn.textContent = 'Logging in…';
-  errEl.classList.add('hidden');
-  try {
-    const data = await api('POST', '/users/login', {
-      email: document.getElementById('login-email').value,
-      password: document.getElementById('login-password').value,
-    });
-    saveSession(data);
-    closeAuth();
-    navigate('dashboard');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Log In';
+  // ── Deposition Rate ──────────────────────────────────────────────────────
+  function calcDR() {
+    const wfs = parseFloat(document.getElementById('dr-wfs').value);
+    const dia = parseFloat(document.getElementById('dr-dia').value);
+    const el  = document.getElementById('dr-result');
+    if (!wfs || !dia || wfs <= 0 || dia <= 0) { el.textContent = '—'; return; }
+    // Steel density ≈ 0.284 lb/in³
+    const areaIn2 = Math.PI * (dia / 2) ** 2;
+    const dr = wfs * areaIn2 * 60 * 0.284; // lb/hr
+    el.textContent = `${dr.toFixed(3)} lb/hr deposition rate`;
   }
-}
-async function doRegister(e) {
-  e.preventDefault();
-  const btn = document.getElementById('register-btn');
-  const errEl = document.getElementById('register-error');
-  btn.disabled = true; btn.textContent = 'Creating account…';
-  errEl.classList.add('hidden');
-  try {
-    const data = await api('POST', '/users/register', {
-      name: document.getElementById('reg-name').value,
-      email: document.getElementById('reg-email').value,
-      password: document.getElementById('reg-password').value,
-      role: document.getElementById('reg-role').value,
-    });
-    saveSession(data);
-    closeAuth();
-    navigate('dashboard');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Create Account';
+
+  // ── Preheat Temperature ──────────────────────────────────────────────────
+  function calcPH() {
+    const ce = parseFloat(document.getElementById('ph-ce').value);
+    const t  = parseFloat(document.getElementById('ph-thick').value);
+    const el = document.getElementById('ph-result');
+    if (isNaN(ce) || isNaN(t) || t <= 0) { el.textContent = '—'; return; }
+    let tempF, tempC, note;
+    // Simplified AWS D1.1 preheat guide
+    if (ce < 0.40) { tempF = 32;  note = 'No preheat required'; }
+    else if (ce < 0.50) { tempF = t < 20 ? 32 : 150; note = tempF > 32 ? 'Low preheat' : 'No preheat'; }
+    else if (ce < 0.60) { tempF = 300; note = 'Moderate preheat'; }
+    else               { tempF = 400; note = 'High preheat required'; }
+    tempC = Math.round((tempF - 32) * 5 / 9);
+    el.textContent = tempF > 32
+      ? `${tempF}°F  (${tempC}°C)  — ${note}`
+      : `None required  — ${note}`;
   }
-}
-function saveSession(data) {
-  state.token = data.token;
-  state.user = data.user;
-  localStorage.setItem('flh_token', data.token);
-  localStorage.setItem('flh_user', JSON.stringify(data.user));
-  renderNav();
-}
-function doLogout() {
-  state.token = null; state.user = null;
-  localStorage.removeItem('flh_token');
-  localStorage.removeItem('flh_user');
-  renderNav();
-  navigate('home');
-}
 
-/* ===== HOME ===== */
-function renderHome(app) {
-  app.innerHTML = `
-    <div class="hero">
-      <h1>Find Work. Get Work Done.</h1>
-      <p>Connect with talented freelancers or post a job to find the perfect professional for any project.</p>
-      <div class="hero-actions">
-        <button class="btn btn-white" onclick="navigate('gigs')">Browse Gigs</button>
-        <button class="btn btn-outline-white" onclick="navigate('jobs')">Browse Jobs</button>
-        ${!state.user ? `<button class="btn btn-white" onclick="openAuth('register')">Get Started Free</button>` : ''}
-      </div>
-    </div>
-    <div id="home-content">
-      <div class="loading">Loading featured gigs…</div>
-    </div>
-  `;
-  loadHomeContent();
-}
-
-async function loadHomeContent() {
-  try {
-    const [gigs, jobs] = await Promise.all([
-      api('GET', '/gigs?status=active'),
-      api('GET', '/jobs?status=open'),
-    ]);
-    const el = document.getElementById('home-content');
-    if (!el) return;
-    el.innerHTML = `
-      <div class="section-header">
-        <h2>Featured Gigs</h2>
-        <button class="btn btn-ghost btn-sm" onclick="navigate('gigs')">View All →</button>
-      </div>
-      <div class="grid" id="home-gigs">${renderGigCards(gigs.slice(0,6))}</div>
-      <hr style="margin:2.5rem 0"/>
-      <div class="section-header">
-        <h2>Open Jobs</h2>
-        <button class="btn btn-ghost btn-sm" onclick="navigate('jobs')">View All →</button>
-      </div>
-      <div class="grid">${renderJobCards(jobs.slice(0,6))}</div>
-    `;
-  } catch (err) {
-    const el = document.getElementById('home-content');
-    if (el) el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-/* ===== GIG LIST ===== */
-function renderGigList(app) {
-  app.innerHTML = `
-    <div class="section-header">
-      <h2>Browse Gigs</h2>
-      ${state.user && state.user.role === 'freelancer'
-        ? `<button class="btn btn-primary btn-sm" onclick="navigate('create-gig')">+ Create Gig</button>`
-        : ''}
-    </div>
-    <div class="filters">
-      <select id="filter-cat" onchange="loadGigs()">
-        <option value="">All Categories</option>
-        ${categoryOptions()}
-      </select>
-      <input type="number" id="filter-min" placeholder="Min price $" style="width:130px" onchange="loadGigs()" />
-      <input type="number" id="filter-max" placeholder="Max price $" style="width:130px" onchange="loadGigs()" />
-    </div>
-    <div id="gig-list-content"><div class="loading">Loading…</div></div>
-  `;
-  loadGigs();
-}
-
-async function loadGigs() {
-  const cat = document.getElementById('filter-cat').value;
-  const min = document.getElementById('filter-min').value;
-  const max = document.getElementById('filter-max').value;
-  let url = '/gigs?status=active';
-  if (cat) url += `&category=${encodeURIComponent(cat)}`;
-  if (min) url += `&minPrice=${min}`;
-  if (max) url += `&maxPrice=${max}`;
-  const el = document.getElementById('gig-list-content');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const gigs = await api('GET', url);
-    el.innerHTML = gigs.length
-      ? `<div class="grid">${renderGigCards(gigs)}</div>`
-      : emptyState('📦', 'No gigs found', 'Try adjusting your filters.');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function renderGigCards(gigs) {
-  return gigs.map(g => `
-    <div class="card" onclick="navigate('gig', {id:'${g.id}'})">
-      <div class="card-header">
-        <h3>${esc(g.title)}</h3>
-        <span class="status-badge status-${g.status}">${g.status}</span>
-      </div>
-      <p>${esc(g.description)}</p>
-      <div class="card-footer">
-        <span class="price">$${g.priceUsd}</span>
-        <span class="cat-tag">${esc(g.category)}</span>
-        <span class="meta">⏱ ${g.deliveryDays}d</span>
-      </div>
-    </div>
-  `).join('') || emptyState('📦', 'No gigs found', '');
-}
-
-/* ===== JOB LIST ===== */
-function renderJobList(app) {
-  app.innerHTML = `
-    <div class="section-header">
-      <h2>Browse Jobs</h2>
-      ${state.user && state.user.role === 'client'
-        ? `<button class="btn btn-primary btn-sm" onclick="navigate('post-job')">+ Post Job</button>`
-        : ''}
-    </div>
-    <div class="filters">
-      <select id="filter-job-cat" onchange="loadJobs()">
-        <option value="">All Categories</option>
-        ${categoryOptions()}
-      </select>
-    </div>
-    <div id="job-list-content"><div class="loading">Loading…</div></div>
-  `;
-  loadJobs();
-}
-
-async function loadJobs() {
-  const cat = document.getElementById('filter-job-cat').value;
-  let url = '/jobs?status=open';
-  if (cat) url += `&category=${encodeURIComponent(cat)}`;
-  const el = document.getElementById('job-list-content');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const jobs = await api('GET', url);
-    el.innerHTML = jobs.length
-      ? `<div class="grid">${renderJobCards(jobs)}</div>`
-      : emptyState('💼', 'No open jobs found', 'Try adjusting your filters.');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function renderJobCards(jobs) {
-  return jobs.map(j => `
-    <div class="card" onclick="navigate('job', {id:'${j.id}'})">
-      <div class="card-header">
-        <h3>${esc(j.title)}</h3>
-        <span class="status-badge status-${j.status}">${j.status}</span>
-      </div>
-      <p>${esc(j.description)}</p>
-      <div class="card-footer">
-        <span class="price price-budget">Budget: $${j.budgetUsd}</span>
-        <span class="cat-tag">${esc(j.category)}</span>
-      </div>
-    </div>
-  `).join('') || emptyState('💼', 'No jobs found', '');
-}
-
-/* ===== LOAD LIST ===== */
-function renderLoadList(app) {
-  app.innerHTML = `
-    <div class="section-header">
-      <h2>Browse Loads</h2>
-      ${state.user && state.user.role === 'shipper'
-        ? `<button class="btn btn-primary btn-sm" onclick="navigate('create-load')">+ Post Load</button>`
-        : ''}
-    </div>
-    <div class="filters">
-      <select id="filter-load-status" onchange="loadLoads()">
-        <option value="open">Open</option>
-        <option value="booked">Booked</option>
-        <option value="in_transit">In Transit</option>
-        <option value="delivered">Delivered</option>
-      </select>
-      <input type="text" id="filter-load-origin" placeholder="Origin" onchange="loadLoads()" />
-      <input type="text" id="filter-load-destination" placeholder="Destination" onchange="loadLoads()" />
-    </div>
-    <div id="load-list-content"><div class="loading">Loading…</div></div>
-  `;
-  loadLoads();
-}
-
-async function loadLoads() {
-  const status = document.getElementById('filter-load-status')?.value || 'open';
-  const origin = document.getElementById('filter-load-origin')?.value || '';
-  const destination = document.getElementById('filter-load-destination')?.value || '';
-  let url = `/loads?status=${encodeURIComponent(status)}`;
-  if (origin) url += `&origin=${encodeURIComponent(origin)}`;
-  if (destination) url += `&destination=${encodeURIComponent(destination)}`;
-  const el = document.getElementById('load-list-content');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const loads = await api('GET', url);
-    el.innerHTML = loads.length
-      ? `<div class="grid">${renderLoadCards(loads)}</div>`
-      : emptyState('🚚', 'No loads found', 'Try different filters.');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function renderLoadCards(loads) {
-  return loads.map(l => `
-    <div class="card" onclick="navigate('load',{id:'${encodeURIComponent(l.id)}'})">
-      <div class="card-header">
-        <h3>${esc(l.title)}</h3>
-        <span class="status-badge status-${l.status}">${l.status}</span>
-      </div>
-      <p>${esc(l.description)}</p>
-      <div class="meta" style="margin-bottom:.75rem">📍 ${esc(l.origin)} → ${esc(l.destination)}</div>
-      <div class="card-footer">
-        <span class="price price-budget">Budget: $${l.budgetUsd}</span>
-        <span class="meta">${l.weightLbs} lbs</span>
-      </div>
-    </div>
-  `).join('') || emptyState('🚚', 'No loads found', '');
-}
-
-async function renderLoadDetail(app) {
-  app.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const load = await api('GET', `/loads/${state.params.id}`);
-    const isOwner = state.user && state.user.id === load.shipperId;
-    const canQuote = state.user && state.user.role === 'carrier' && load.status === 'open';
-    const [quotes, shipment, invoices] = await Promise.all([
-      state.user ? api('GET', `/quotes/load/${load.id}`).catch(() => []) : Promise.resolve([]),
-      state.user ? api('GET', `/shipments/load/${load.id}`).catch(() => null) : Promise.resolve(null),
-      state.user && ['shipper', 'carrier'].includes(state.user.role)
-        ? api('GET', '/invoices/my').then((items) => items.filter((i) => i.loadId === load.id)).catch(() => [])
-        : Promise.resolve([]),
-    ]);
-    const acceptedQuote = quotes.find(q => q.status === 'accepted');
-    const userCanManageShipment = state.user && shipment &&
-      ((state.user.role === 'carrier' && shipment.carrierId === state.user.id) || (state.user.role === 'driver' && shipment.driverId === state.user.id));
-
-    app.innerHTML = `
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('loads')">← Back to Loads</button>
-      </div>
-      <div class="detail-page">
-        <div>
-          <div class="detail-card">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
-              <span class="meta">${esc(load.origin)} → ${esc(load.destination)}</span>
-              <span class="status-badge status-${load.status}">${load.status}</span>
-            </div>
-            <h1 class="detail-title">${esc(load.title)}</h1>
-            <div class="detail-meta">
-              <span>⚖️ ${load.weightLbs} lbs</span>
-              <span>💰 Budget $${load.budgetUsd}</span>
-              <span>🗓 Posted ${formatDate(load.createdAt)}</span>
-            </div>
-            <div class="detail-body">${esc(load.description)}</div>
-            ${(isOwner && load.status === 'open') ? `<button class="btn btn-danger btn-sm" onclick="cancelLoad('${encodeURIComponent(load.id)}')">Cancel Load</button>` : ''}
-          </div>
-          ${state.user ? `
-            <div class="detail-card" style="margin-top:1.5rem">
-              <h3 style="margin-bottom:1rem">Quotes (${quotes.length})</h3>
-              ${renderQuoteItems(quotes, isOwner)}
-            </div>
-          ` : ''}
-          ${shipment ? `
-            <div class="detail-card" style="margin-top:1.5rem">
-              <h3 style="margin-bottom:1rem">Shipment</h3>
-              <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem">
-                <span class="status-badge status-${shipment.status}">${shipment.status}</span>
-                <span class="meta">Current: ${esc(shipment.currentLocation || 'N/A')}</span>
-              </div>
-              ${shipment.trackingUpdates?.length ? `<div style="font-size:.875rem;color:var(--text-muted);margin-bottom:.75rem">Latest: ${esc(shipment.trackingUpdates[shipment.trackingUpdates.length - 1].location)} (${formatDate(shipment.trackingUpdates[shipment.trackingUpdates.length - 1].timestamp)})</div>` : ''}
-              ${shipment.proofOfDelivery ? `<div class="alert alert-success" style="margin-bottom:.75rem">Delivered and signed by ${esc(shipment.proofOfDelivery.signedBy)}</div>` : ''}
-              ${userCanManageShipment ? renderShipmentActions(shipment.id, shipment.status) : ''}
-            </div>
-          ` : ''}
-          ${invoices.length ? `
-            <div class="detail-card" style="margin-top:1.5rem">
-              <h3 style="margin-bottom:1rem">Invoices</h3>
-              ${invoices.map(inv => `
-                <div class="bid-item" style="cursor:default">
-                  <div class="bid-body">
-                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-                      <span class="bid-amount">$${inv.amountUsd}</span>
-                      <span class="status-badge status-${inv.status}">${inv.status}</span>
-                    </div>
-                    <div class="bid-meta">Platform fee $${inv.platformFeeUsd} · Carrier payout $${inv.carrierPayoutUsd}</div>
-                  </div>
-                  ${state.user && state.user.role === 'shipper' && inv.shipperId === state.user.id && inv.status !== 'paid'
-                    ? `<div class="bid-actions"><button class="btn btn-primary btn-sm" onclick="payInvoice('${encodeURIComponent(inv.id)}')">Pay</button></div>`
-                    : ''}
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
-        <div class="detail-sidebar">
-          ${canQuote ? renderQuoteForm(load.id) : ''}
-          ${state.user && state.user.role === 'carrier' && acceptedQuote && !shipment && acceptedQuote.carrierId === state.user.id
-            ? renderDispatchForm(load.id, acceptedQuote.id)
-            : ''}
-          ${state.user && state.user.role === 'carrier' && shipment && shipment.status === 'delivered' && !invoices.length
-            ? `<div class="sidebar-card"><h4>Billing</h4><button class="btn btn-primary" onclick="createInvoice('${encodeURIComponent(shipment.id)}')">Generate Invoice</button></div>`
-            : ''}
-          ${!state.user ? `<div class="sidebar-card"><p style="font-size:.875rem;color:var(--text-muted)"><a href="#" onclick="openAuth('login')">Log in</a> to quote or track loads.</p></div>` : ''}
-        </div>
-      </div>
-    `;
-  } catch (err) {
-    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function renderQuoteItems(quotes, isOwner) {
-  if (!quotes.length) return '<p style="color:var(--text-muted);font-size:.875rem">No quotes yet.</p>';
-  return quotes.map(q => `
-    <div class="bid-item">
-      <div class="bid-body">
-        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-          <span class="bid-amount">$${q.amountUsd}</span>
-          <span class="status-badge status-${q.status}">${q.status}</span>
-        </div>
-        <div class="bid-message">${esc(q.message)}</div>
-        <div class="bid-meta">Carrier ID: ${esc(q.carrierId)} · ETA ${pluralizeDays(q.estimatedDays)}</div>
-      </div>
-      ${isOwner && q.status === 'pending' ? `
-        <div class="bid-actions">
-          <button class="btn btn-success btn-sm" onclick="acceptQuote('${encodeURIComponent(q.id)}')">Accept</button>
-          <button class="btn btn-secondary btn-sm" onclick="rejectQuote('${encodeURIComponent(q.id)}')">Reject</button>
-        </div>
-      ` : ''}
-    </div>
-  `).join('');
-}
-
-function renderQuoteForm(loadId) {
-  return `
-    <div class="sidebar-card">
-      <h4>Submit Quote</h4>
-      <form onsubmit="submitQuote(event,'${loadId}')">
-        <div class="form-group">
-          <label>Amount (USD)</label>
-          <input type="number" id="quote-amount" min="1" step="0.01" required />
-        </div>
-        <div class="form-group">
-          <label>Estimated Days</label>
-          <input type="number" id="quote-days" min="1" required />
-        </div>
-        <div class="form-group">
-          <label>Message</label>
-          <textarea id="quote-message" style="min-height:90px" required></textarea>
-        </div>
-        <div id="quote-error" class="alert alert-error hidden"></div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Submit Quote</button>
-      </form>
-    </div>
-  `;
-}
-
-function renderDispatchForm(loadId, quoteId) {
-  return `
-    <div class="sidebar-card">
-      <h4>Dispatch Shipment</h4>
-      <form onsubmit="dispatchShipment(event,'${loadId}','${quoteId}')">
-        <div class="form-group">
-          <label>Driver ID (optional)</label>
-          <input type="text" id="dispatch-driver" placeholder="driver user id" />
-        </div>
-        <div id="dispatch-error" class="alert alert-error hidden"></div>
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Dispatch</button>
-      </form>
-    </div>
-  `;
-}
-
-function renderShipmentActions(shipmentId, status) {
-  const canTrack = ['dispatched', 'in_transit'].includes(status);
-  return `
-    <div style="display:grid;gap:.75rem">
-      ${canTrack ? `
-        <form onsubmit="addTrackingUpdate(event,'${shipmentId}')" style="display:grid;gap:.5rem">
-          <input type="text" id="track-location" placeholder="Current location" required />
-          <input type="text" id="track-note" placeholder="Optional note" />
-          <button class="btn btn-secondary btn-sm" type="submit">Add Tracking</button>
-        </form>
-        <form onsubmit="submitPod(event,'${shipmentId}')" style="display:grid;gap:.5rem">
-          <input type="text" id="pod-signed-by" placeholder="Signed by" required />
-          <input type="text" id="pod-notes" placeholder="Optional delivery notes" />
-          <button class="btn btn-success btn-sm" type="submit">Submit POD</button>
-        </form>
-      ` : ''}
-    </div>
-  `;
-}
-
-function renderCreateLoad(app) {
-  if (!state.user || state.user.role !== 'shipper') {
-    app.innerHTML = `<div class="alert alert-error">Only shippers can post loads.</div>`;
-    return;
-  }
-  app.innerHTML = `
-    <div class="form-page">
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
-      </div>
-      <div class="form-card">
-        <h2>Post a Load</h2>
-        <form onsubmit="createLoad(event)">
-          <div class="form-group"><label>Title</label><input type="text" id="load-title" required /></div>
-          <div class="form-group"><label>Description</label><textarea id="load-description" style="min-height:120px" required></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label>Origin</label><input type="text" id="load-origin" required /></div>
-            <div class="form-group"><label>Destination</label><input type="text" id="load-destination" required /></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Weight (lbs)</label><input type="number" id="load-weight" min="1" required /></div>
-            <div class="form-group"><label>Budget (USD)</label><input type="number" id="load-budget" min="1" step="0.01" required /></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Freight Class</label><input type="text" id="load-class" placeholder="Optional" /></div>
-            <div class="form-group"><label>Pickup Date</label><input type="date" id="load-pickup" /></div>
-          </div>
-          <div class="form-group"><label>Delivery Date</label><input type="date" id="load-delivery" /></div>
-          <div id="create-load-error" class="alert alert-error hidden"></div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
-            <button type="submit" class="btn btn-primary">Post Load</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-}
-
-async function createLoad(e) {
-  e.preventDefault();
-  const errEl = document.getElementById('create-load-error');
-  errEl.classList.add('hidden');
-  try {
-    const load = await api('POST', '/loads', {
-      title: document.getElementById('load-title').value,
-      description: document.getElementById('load-description').value,
-      origin: document.getElementById('load-origin').value,
-      destination: document.getElementById('load-destination').value,
-      weightLbs: parseFloat(document.getElementById('load-weight').value),
-      budgetUsd: parseFloat(document.getElementById('load-budget').value),
-      freightClass: document.getElementById('load-class').value || null,
-      pickupDate: document.getElementById('load-pickup').value || null,
-      deliveryDate: document.getElementById('load-delivery').value || null,
-    });
-    navigate('load', { id: load.id });
-    showToast('Load posted!');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  }
-}
-
-async function submitQuote(e, loadId) {
-  e.preventDefault();
-  const errEl = document.getElementById('quote-error');
-  if (errEl) errEl.classList.add('hidden');
-  try {
-    await api('POST', '/quotes', {
-      loadId,
-      amountUsd: parseFloat(document.getElementById('quote-amount').value),
-      estimatedDays: parseInt(document.getElementById('quote-days').value),
-      message: document.getElementById('quote-message').value,
-    });
-    showToast('Quote submitted!');
-    navigate('load', { id: loadId });
-  } catch (err) {
-    if (errEl) {
-      errEl.textContent = err.message;
-      errEl.classList.remove('hidden');
-    }
-  }
-}
-
-async function acceptQuote(id) {
-  try {
-    await api('PUT', `/quotes/${id}/accept`);
-    showToast('Quote accepted');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function rejectQuote(id) {
-  try {
-    await api('PUT', `/quotes/${id}/reject`);
-    showToast('Quote rejected');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function dispatchShipment(e, loadId, quoteId) {
-  e.preventDefault();
-  const errEl = document.getElementById('dispatch-error');
-  if (errEl) errEl.classList.add('hidden');
-  try {
-    const driverId = document.getElementById('dispatch-driver').value.trim();
-    await api('POST', '/shipments', {
-      loadId,
-      quoteId,
-      ...(driverId ? { driverId } : {}),
-    });
-    showToast('Shipment dispatched');
-    navigate('load', { id: loadId });
-  } catch (err) {
-    if (errEl) {
-      errEl.textContent = err.message;
-      errEl.classList.remove('hidden');
-    }
-  }
-}
-
-async function addTrackingUpdate(e, shipmentId) {
-  e.preventDefault();
-  try {
-    await api('POST', `/shipments/${shipmentId}/tracking`, {
-      location: document.getElementById('track-location').value,
-      note: document.getElementById('track-note').value || null,
-    });
-    showToast('Tracking updated');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function submitPod(e, shipmentId) {
-  e.preventDefault();
-  try {
-    await api('POST', `/shipments/${shipmentId}/pod`, {
-      signedBy: document.getElementById('pod-signed-by').value,
-      notes: document.getElementById('pod-notes').value || null,
-    });
-    showToast('Proof of delivery submitted');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function createInvoice(shipmentId) {
-  try {
-    await api('POST', '/invoices', { shipmentId });
-    showToast('Invoice generated');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function payInvoice(invoiceId) {
-  try {
-    await api('POST', `/invoices/${invoiceId}/pay`);
-    showToast('Payment initiated');
-    navigate('load', { id: state.params.id });
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-async function cancelLoad(id) {
-  if (!confirm('Cancel this load?')) return;
-  try {
-    await api('DELETE', `/loads/${id}`);
-    navigate('loads');
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-/* ===== GIG DETAIL ===== */
-async function renderGigDetail(app) {
-  app.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const gig = await api('GET', `/gigs/${state.params.id}`);
-    const isOwner = state.user && state.user.id === gig.freelancerId;
-    const isClient = state.user && state.user.role === 'client';
-
-    app.innerHTML = `
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('gigs')">← Back to Gigs</button>
-      </div>
-      <div class="detail-page">
-        <div>
-          <div class="detail-card">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
-              <span class="cat-tag">${esc(gig.category)}</span>
-              <span class="status-badge status-${gig.status}">${gig.status}</span>
-            </div>
-            <h1 class="detail-title">${esc(gig.title)}</h1>
-            <div class="detail-meta">
-              <span>⏱ Delivery: ${gig.deliveryDays} day${gig.deliveryDays !== 1 ? 's' : ''}</span>
-              <span>🗓 Posted ${formatDate(gig.createdAt)}</span>
-            </div>
-            <div class="detail-body">${esc(gig.description)}</div>
-            ${isOwner ? `
-              <div style="display:flex;gap:.75rem">
-                <button class="btn btn-secondary btn-sm" onclick="navigate('edit-gig',{id:'${gig.id}'})">Edit Gig</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteGig('${gig.id}')">Delete</button>
-              </div>
-            ` : ''}
-          </div>
-          <div id="gig-reviews" style="margin-top:1.5rem"><div class="loading">Loading reviews…</div></div>
-        </div>
-        <div class="detail-sidebar">
-          <div class="sidebar-card">
-            <h4>Pricing</h4>
-            <div class="sidebar-price">$${gig.priceUsd}</div>
-            <div class="sidebar-meta" style="margin-top:.25rem">Delivery in ${gig.deliveryDays} day${gig.deliveryDays !== 1 ? 's' : ''}</div>
-            ${isClient && gig.status === 'active' ? `
-              <button class="btn btn-primary" onclick="showOrderModal('${gig.id}','${esc(gig.title)}',${gig.priceUsd})">Order Now</button>
-            ` : !state.user ? `
-              <button class="btn btn-secondary" onclick="openAuth('register')">Sign up to Order</button>
-            ` : ''}
-          </div>
-          <div class="sidebar-card">
-            <h4>Leave a Review</h4>
-            ${state.user ? renderReviewFormInline('gig', gig.id, gig.freelancerId) : `<p style="font-size:.85rem;color:var(--text-muted)"><a href="#" onclick="openAuth('login')">Log in</a> to leave a review.</p>`}
-          </div>
-        </div>
-      </div>
-      ${isClient ? orderModal() : ''}
-    `;
-    loadGigReviews(gig.id);
-  } catch (err) {
-    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function orderModal() {
-  return `
-    <div class="modal-overlay hidden" id="order-modal">
-      <div class="modal">
-        <button class="modal-close" onclick="document.getElementById('order-modal').classList.add('hidden')">✕</button>
-        <h2>Place Order</h2>
-        <p id="order-gig-name"></p>
-        <div class="sidebar-price" id="order-price"></div>
-        <p style="font-size:.85rem;color:var(--text-muted);margin-top:.5rem">A payment intent will be created. (9% platform fee applies)</p>
-        <div id="order-result" class="hidden" style="margin-top:1rem"></div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem" onclick="doOrder()">Confirm Order</button>
-      </div>
-    </div>
-  `;
-}
-
-function showOrderModal(gigId, title, price) {
-  const modal = document.getElementById('order-modal');
-  modal.classList.remove('hidden');
-  modal.addEventListener('click', function handler(e) {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
-      modal.removeEventListener('click', handler);
-    }
-  });
-  document.getElementById('order-gig-name').textContent = title;
-  document.getElementById('order-price').textContent = `$${price}`;
-  document.getElementById('order-modal').dataset.amount = price;
-}
-
-async function doOrder() {
-  const modal = document.getElementById('order-modal');
-  const resultEl = document.getElementById('order-result');
-  const amount = parseFloat(modal.dataset.amount);
-  resultEl.className = 'hidden';
-  try {
-    const data = await api('POST', '/payments/intent', { amountUsd: amount });
-    resultEl.innerHTML = `
-      <div class="alert alert-success">
-        ✅ Payment intent created!<br/>
-        <small>Platform fee: $${data.platformFeeUsd} | Freelancer payout: $${data.freelancerPayoutUsd}</small>
-      </div>
-    `;
-    resultEl.classList.remove('hidden');
-  } catch (err) {
-    resultEl.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-    resultEl.classList.remove('hidden');
-  }
-}
-
-async function deleteGig(id) {
-  if (!confirm('Delete this gig?')) return;
-  try {
-    await api('DELETE', `/gigs/${id}`);
-    navigate('dashboard');
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
-
-async function loadGigReviews(gigId) {
-  const el = document.getElementById('gig-reviews');
-  if (!el) return;
-  try {
-    const reviews = await api('GET', `/reviews/gig/${gigId}`);
-    el.innerHTML = `
-      <div class="detail-card">
-        <h3 style="margin-bottom:1rem">Reviews (${reviews.length})</h3>
-        ${reviews.length ? reviews.map(renderReview).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No reviews yet.</p>'}
-      </div>
-    `;
-  } catch {
-    el.innerHTML = '';
-  }
-}
-
-/* ===== JOB DETAIL ===== */
-async function renderJobDetail(app) {
-  app.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const job = await api('GET', `/jobs/${state.params.id}`);
-    const isOwner = state.user && state.user.id === job.clientId;
-    const isFreelancer = state.user && state.user.role === 'freelancer';
-
-    app.innerHTML = `
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('jobs')">← Back to Jobs</button>
-      </div>
-      <div class="detail-page">
-        <div>
-          <div class="detail-card">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
-              <span class="cat-tag">${esc(job.category)}</span>
-              <span class="status-badge status-${job.status}">${job.status}</span>
-            </div>
-            <h1 class="detail-title">${esc(job.title)}</h1>
-            <div class="detail-meta">
-              <span>💰 Budget: $${job.budgetUsd}</span>
-              <span>🗓 Posted ${formatDate(job.createdAt)}</span>
-            </div>
-            <div class="detail-body">${esc(job.description)}</div>
-            ${isOwner ? `
-              <button class="btn btn-danger btn-sm" onclick="cancelJob('${job.id}')">Cancel Job</button>
-            ` : ''}
-          </div>
-
-          <div id="bids-section" style="margin-top:1.5rem">
-            <div class="loading">Loading bids…</div>
-          </div>
-        </div>
-        <div class="detail-sidebar">
-          <div class="sidebar-card">
-            <h4>Job Details</h4>
-            <div class="sidebar-meta">Budget</div>
-            <div class="sidebar-price price-budget">$${job.budgetUsd}</div>
-            <div class="sidebar-meta" style="margin-top:.75rem">Category: ${esc(job.category)}</div>
-            <div class="sidebar-meta">Status: ${job.status}</div>
-          </div>
-          ${isFreelancer && job.status === 'open' ? `
-            <div class="sidebar-card">
-              <h4>Submit a Bid</h4>
-              <form onsubmit="submitBid(event,'${job.id}')">
-                <div class="form-group">
-                  <label>Your Bid ($)</label>
-                  <input type="number" id="bid-amount" placeholder="e.g. 250" min="1" step="0.01" required />
-                </div>
-                <div class="form-group">
-                  <label>Message</label>
-                  <textarea id="bid-message" placeholder="Describe your approach…" required style="min-height:80px"></textarea>
-                </div>
-                <div id="bid-error" class="alert alert-error hidden"></div>
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="bid-btn">Submit Bid</button>
-              </form>
-            </div>
-          ` : !state.user ? `
-            <div class="sidebar-card">
-              <p style="font-size:.875rem;color:var(--text-muted)"><a href="#" onclick="openAuth('register')">Sign up as freelancer</a> to submit bids.</p>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    `;
-    loadBids(job.id, isOwner);
-  } catch (err) {
-    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadBids(jobId, isOwner) {
-  const el = document.getElementById('bids-section');
-  if (!el) return;
-  try {
-    const bids = await api('GET', `/bids/job/${jobId}`);
-    el.innerHTML = `
-      <div class="detail-card">
-        <h3 style="margin-bottom:1rem">Bids (${bids.length})</h3>
-        ${bids.length ? bids.map(b => renderBidItem(b, isOwner)).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No bids yet.</p>'}
-      </div>
-    `;
-  } catch {
-    el.innerHTML = '<div class="alert alert-error">Could not load bids.</div>';
-  }
-}
-
-function renderBidItem(bid, isOwner) {
-  return `
-    <div class="bid-item">
-      <div class="bid-body">
-        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-          <span class="bid-amount">$${bid.amountUsd}</span>
-          <span class="status-badge status-${bid.status}">${bid.status}</span>
-        </div>
-        <div class="bid-message">${esc(bid.message)}</div>
-        <div class="bid-meta">${formatDate(bid.createdAt)}</div>
-      </div>
-      ${isOwner && bid.status === 'pending' ? `
-        <div class="bid-actions">
-          <button class="btn btn-success btn-sm" onclick="acceptBid('${bid.id}','${bid.jobId}')">Accept</button>
-          <button class="btn btn-secondary btn-sm" onclick="rejectBid('${bid.id}','${bid.jobId}')">Reject</button>
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-async function submitBid(e, jobId) {
-  e.preventDefault();
-  const btn = document.getElementById('bid-btn');
-  const errEl = document.getElementById('bid-error');
-  btn.disabled = true; btn.textContent = 'Submitting…';
-  errEl.classList.add('hidden');
-  try {
-    await api('POST', '/bids', {
-      jobId,
-      amountUsd: parseFloat(document.getElementById('bid-amount').value),
-      message: document.getElementById('bid-message').value,
-    });
-    document.getElementById('bid-amount').value = '';
-    document.getElementById('bid-message').value = '';
-    loadBids(jobId, false);
-    showToast('Bid submitted!');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Submit Bid';
-  }
-}
-
-async function acceptBid(bidId, jobId) {
-  if (!confirm('Accept this bid? All other bids will be rejected.')) return;
-  try {
-    await api('PUT', `/bids/${bidId}/accept`);
-    loadBids(jobId, true);
-    showToast('Bid accepted!');
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
-
-async function rejectBid(bidId, jobId) {
-  try {
-    await api('PUT', `/bids/${bidId}/reject`);
-    loadBids(jobId, true);
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
-
-async function cancelJob(id) {
-  if (!confirm('Cancel this job?')) return;
-  try {
-    await api('DELETE', `/jobs/${id}`);
-    navigate('dashboard');
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
-
-/* ===== CREATE GIG ===== */
-function renderCreateGig(app) {
-  if (!state.user || state.user.role !== 'freelancer') {
-    app.innerHTML = `<div class="alert alert-error">Only freelancers can create gigs.</div>`;
-    return;
-  }
-  app.innerHTML = `
-    <div class="form-page">
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
-      </div>
-      <div class="form-card">
-        <h2>Create a New Gig</h2>
-        <form onsubmit="doCreateGig(event)">
-          <div class="form-group">
-            <label>Gig Title</label>
-            <input type="text" id="gig-title" placeholder="I will design a professional logo…" required />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="gig-desc" placeholder="Describe what you offer…" style="min-height:120px" required></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Category</label>
-              <select id="gig-cat">
-                ${categoryOptions()}
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Price (USD)</label>
-              <input type="number" id="gig-price" placeholder="50" min="1" step="0.01" required />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Delivery Days</label>
-            <input type="number" id="gig-days" placeholder="3" min="1" required />
-          </div>
-          <div id="create-gig-error" class="alert alert-error hidden"></div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="create-gig-btn">Publish Gig</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-}
-
-async function doCreateGig(e) {
-  e.preventDefault();
-  const btn = document.getElementById('create-gig-btn');
-  const errEl = document.getElementById('create-gig-error');
-  btn.disabled = true; btn.textContent = 'Publishing…';
-  errEl.classList.add('hidden');
-  try {
-    await api('POST', '/gigs', {
-      title: document.getElementById('gig-title').value,
-      description: document.getElementById('gig-desc').value,
-      category: document.getElementById('gig-cat').value,
-      priceUsd: parseFloat(document.getElementById('gig-price').value),
-      deliveryDays: parseInt(document.getElementById('gig-days').value),
-    });
-    navigate('dashboard');
-    showToast('Gig published!');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Publish Gig';
-  }
-}
-
-/* ===== EDIT GIG ===== */
-async function renderEditGig(app) {
-  if (!state.user || state.user.role !== 'freelancer') {
-    app.innerHTML = `<div class="alert alert-error">Only freelancers can edit gigs.</div>`;
-    return;
-  }
-  app.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const gig = await api('GET', `/gigs/${state.params.id}`);
-    if (gig.freelancerId !== state.user.id) {
-      app.innerHTML = `<div class="alert alert-error">You are not authorized to edit this gig.</div>`;
-      return;
-    }
-    app.innerHTML = `
-      <div class="form-page">
-        <div style="margin-bottom:1rem">
-          <button class="btn btn-secondary btn-sm" onclick="navigate('gig',{id:'${gig.id}'})">← Back to Gig</button>
-        </div>
-        <div class="form-card">
-          <h2>Edit Gig</h2>
-          <form onsubmit="doEditGig(event,'${gig.id}')">
-            <div class="form-group">
-              <label>Gig Title</label>
-              <input type="text" id="edit-gig-title" placeholder="I will design a professional logo…" value="${esc(gig.title)}" required />
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea id="edit-gig-desc" placeholder="Describe what you offer…" style="min-height:120px" required>${esc(gig.description)}</textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Category</label>
-                <select id="edit-gig-cat">
-                  ${categoryOptions(gig.category)}
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Price (USD)</label>
-                <input type="number" id="edit-gig-price" placeholder="50" min="1" step="0.01" value="${gig.priceUsd}" required />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Delivery Days</label>
-                <input type="number" id="edit-gig-days" placeholder="3" min="1" value="${gig.deliveryDays}" required />
-              </div>
-              <div class="form-group">
-                <label>Status</label>
-                <select id="edit-gig-status">
-                  <option value="active" ${gig.status === 'active' ? 'selected' : ''}>Active</option>
-                  <option value="paused" ${gig.status === 'paused' ? 'selected' : ''}>Paused</option>
-                </select>
-              </div>
-            </div>
-            <div id="edit-gig-error" class="alert alert-error hidden"></div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" onclick="navigate('gig',{id:'${gig.id}'})">Cancel</button>
-              <button type="submit" class="btn btn-primary" id="edit-gig-btn">Save Changes</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  } catch (err) {
-    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function doEditGig(e, gigId) {
-  e.preventDefault();
-  const btn = document.getElementById('edit-gig-btn');
-  const errEl = document.getElementById('edit-gig-error');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  errEl.classList.add('hidden');
-  try {
-    await api('PUT', `/gigs/${gigId}`, {
-      title: document.getElementById('edit-gig-title').value,
-      description: document.getElementById('edit-gig-desc').value,
-      category: document.getElementById('edit-gig-cat').value,
-      priceUsd: parseFloat(document.getElementById('edit-gig-price').value),
-      deliveryDays: parseInt(document.getElementById('edit-gig-days').value),
-      status: document.getElementById('edit-gig-status').value,
-    });
-    navigate('gig', { id: gigId });
-    showToast('Gig updated!');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Save Changes';
-  }
-}
-
-/* ===== POST JOB ===== */
-function renderPostJob(app) {
-  if (!state.user || state.user.role !== 'client') {
-    app.innerHTML = `<div class="alert alert-error">Only clients can post jobs.</div>`;
-    return;
-  }
-  app.innerHTML = `
-    <div class="form-page">
-      <div style="margin-bottom:1rem">
-        <button class="btn btn-secondary btn-sm" onclick="navigate('dashboard')">← Back</button>
-      </div>
-      <div class="form-card">
-        <h2>Post a New Job</h2>
-        <form onsubmit="doPostJob(event)">
-          <div class="form-group">
-            <label>Job Title</label>
-            <input type="text" id="job-title" placeholder="Build a REST API for my app…" required />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="job-desc" placeholder="Describe the work in detail…" style="min-height:120px" required></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Category</label>
-              <select id="job-cat">
-                ${categoryOptions()}
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Budget (USD)</label>
-              <input type="number" id="job-budget" placeholder="500" min="1" step="0.01" required />
-            </div>
-          </div>
-          <div id="post-job-error" class="alert alert-error hidden"></div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="navigate('dashboard')">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="post-job-btn">Post Job</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-}
-
-async function doPostJob(e) {
-  e.preventDefault();
-  const btn = document.getElementById('post-job-btn');
-  const errEl = document.getElementById('post-job-error');
-  btn.disabled = true; btn.textContent = 'Posting…';
-  errEl.classList.add('hidden');
-  try {
-    await api('POST', '/jobs', {
-      title: document.getElementById('job-title').value,
-      description: document.getElementById('job-desc').value,
-      category: document.getElementById('job-cat').value,
-      budgetUsd: parseFloat(document.getElementById('job-budget').value),
-    });
-    navigate('dashboard');
-    showToast('Job posted!');
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Post Job';
-  }
-}
-
-/* ===== DASHBOARD ===== */
-async function renderDashboard(app) {
-  if (!state.user) {
-    openAuth('login');
-    navigate('home');
-    return;
-  }
-  app.innerHTML = `
-    <div class="profile-header">
-      <div class="profile-avatar">${state.user.name[0].toUpperCase()}</div>
-      <div class="profile-info">
-        <h2>${esc(state.user.name)}</h2>
-        <p>${esc(state.user.email)} · <span class="badge badge-${state.user.role}">${state.user.role}</span></p>
-      </div>
-      ${getDashboardActionButton()}
-    </div>
-    ${renderDashboardBody()}
-  `;
-  loadDashboardData();
-}
-
-function getDashboardActionButton() {
-  if (state.user.role === 'freelancer') {
-    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-gig')">+ Create Gig</button>`;
-  }
-  if (state.user.role === 'client') {
-    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('post-job')">+ Post Job</button>`;
-  }
-  if (state.user.role === 'shipper') {
-    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('create-load')">+ Post Load</button>`;
-  }
-  if (state.user.role === 'carrier') {
-    return `<button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="navigate('loads')">Browse Loads</button>`;
-  }
-  return '';
-}
-
-function renderDashboardBody() {
-  if (state.user.role === 'freelancer') return renderFreelancerDashboard();
-  if (state.user.role === 'client') return renderClientDashboard();
-  if (state.user.role === 'shipper') return renderShipperDashboard();
-  if (state.user.role === 'carrier') return renderCarrierDashboard();
-  if (state.user.role === 'driver') return renderDriverDashboard();
-  return `<div class="alert alert-info">No dashboard widgets configured for ${esc(state.user.role)}.</div>`;
-}
-
-function loadDashboardData() {
-  if (state.user.role === 'freelancer') {
-    loadMyGigs();
-    loadMyBids();
-    return;
-  }
-  if (state.user.role === 'client') {
-    loadMyJobs();
-    return;
-  }
-  if (state.user.role === 'shipper') {
-    loadMyLoads();
-    loadMyInvoices();
-    return;
-  }
-  if (state.user.role === 'carrier') {
-    loadMyQuotes();
-    loadMyCarrierInvoices();
-    return;
-  }
-  if (state.user.role === 'driver') {
-    return;
-  }
-}
-
-function renderFreelancerDashboard() {
-  return `
-    <div class="tabs">
-      <button class="tab active" id="tab-my-gigs" onclick="switchDashTab('my-gigs')">My Gigs</button>
-      <button class="tab" id="tab-my-bids" onclick="switchDashTab('my-bids')">My Bids</button>
-    </div>
-    <div id="dash-my-gigs" class="dash-panel"><div class="loading">Loading…</div></div>
-    <div id="dash-my-bids" class="dash-panel hidden"><div class="loading">Loading…</div></div>
-  `;
-}
-
-function renderClientDashboard() {
-  return `
-    <div id="dash-my-jobs"><div class="loading">Loading your jobs…</div></div>
-  `;
-}
-
-function renderShipperDashboard() {
-  return `
-    <div class="tabs">
-      <button class="tab active" id="tab-my-loads" onclick="switchDashTab('my-loads')">My Loads</button>
-      <button class="tab" id="tab-my-invoices" onclick="switchDashTab('my-invoices')">My Invoices</button>
-    </div>
-    <div id="dash-my-loads" class="dash-panel"><div class="loading">Loading your loads…</div></div>
-    <div id="dash-my-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
-  `;
-}
-
-function renderCarrierDashboard() {
-  return `
-    <div class="tabs">
-      <button class="tab active" id="tab-my-quotes" onclick="switchDashTab('my-quotes')">My Quotes</button>
-      <button class="tab" id="tab-my-carrier-invoices" onclick="switchDashTab('my-carrier-invoices')">My Invoices</button>
-    </div>
-    <div id="dash-my-quotes" class="dash-panel"><div class="loading">Loading your quotes…</div></div>
-    <div id="dash-my-carrier-invoices" class="dash-panel hidden"><div class="loading">Loading invoices…</div></div>
-  `;
-}
-
-function renderDriverDashboard() {
-  return `
-    <div id="dash-driver-helper">
-      <div class="detail-card">
-        <h3 style="margin-bottom:1rem">Driver tools</h3>
-        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem">Open a load by ID to update tracking or submit proof of delivery.</p>
-        <form onsubmit="openLoadById(event)">
-          <div class="form-row">
-            <div class="form-group"><input type="text" id="driver-load-id" placeholder="Load ID" required /></div>
-            <div class="form-group"><button class="btn btn-primary" type="submit" style="width:100%">Open Load</button></div>
-          </div>
-        </form>
-      </div>
-    </div>
-  `;
-}
-
-function switchDashTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(`tab-${tab}`)?.classList.add('active');
-  document.querySelectorAll('.dash-panel').forEach((el) => {
-    el.classList.add('hidden');
-  });
-  document.getElementById(`dash-${tab}`)?.classList.remove('hidden');
-}
-
-async function loadMyGigs() {
-  const el = document.getElementById('dash-my-gigs');
-  if (!el) return;
-  try {
-    // Fetch all active gigs and filter by owner
-    const gigs = await api('GET', '/gigs?status=active');
-    const mine = gigs.filter(g => g.freelancerId === state.user.id);
-    // Also fetch deleted ones by looking at the user's profile
-    if (!mine.length) {
-      el.innerHTML = `
-        ${emptyState('📦', 'No gigs yet', 'Create your first gig to start earning.')}
-        <div style="text-align:center;margin-top:1rem">
-          <button class="btn btn-primary" onclick="navigate('create-gig')">Create Your First Gig</button>
-        </div>
-      `;
-    } else {
-      el.innerHTML = `<div class="grid">${renderMyGigCards(mine)}</div>`;
-    }
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function renderMyGigCards(gigs) {
-  return gigs.map(g => `
-    <div class="card" onclick="navigate('gig',{id:'${g.id}'})">
-      <div class="card-header">
-        <h3>${esc(g.title)}</h3>
-        <span class="status-badge status-${g.status}">${g.status}</span>
-      </div>
-      <p>${esc(g.description)}</p>
-      <div class="card-footer">
-        <span class="price">$${g.priceUsd}</span>
-        <span class="cat-tag">${esc(g.category)}</span>
-        <span class="meta">⏱ ${g.deliveryDays}d</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function loadMyBids() {
-  const el = document.getElementById('dash-my-bids');
-  if (!el) return;
-  try {
-    const bids = await api('GET', '/bids/my');
-    if (!bids.length) {
-      el.innerHTML = emptyState('📝', 'No bids yet', 'Browse open jobs and place your first bid.');
-      return;
-    }
-    el.innerHTML = bids.map(b => `
-      <div class="bid-item" onclick="navigate('job',{id:'${b.jobId}'})" style="cursor:pointer">
-        <div class="bid-body">
-          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-            <span class="bid-amount">$${b.amountUsd}</span>
-            <span class="status-badge status-${b.status}">${b.status}</span>
-          </div>
-          <div class="bid-message">${esc(b.message)}</div>
-          <div class="bid-meta">Job ID: ${b.jobId} · ${formatDate(b.createdAt)}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadMyJobs() {
-  const el = document.getElementById('dash-my-jobs');
-  if (!el) return;
-  try {
-    const [open, inProg] = await Promise.all([
-      api('GET', '/jobs?status=open'),
-      api('GET', '/jobs?status=in_progress'),
-    ]);
-    const allJobs = [...open, ...inProg].filter(j => j.clientId === state.user.id);
-    if (!allJobs.length) {
-      el.innerHTML = `
-        ${emptyState('💼', 'No jobs posted yet', 'Post a job to find talented freelancers.')}
-        <div style="text-align:center;margin-top:1rem">
-          <button class="btn btn-primary" onclick="navigate('post-job')">Post Your First Job</button>
-        </div>
-      `;
-      return;
-    }
-    el.innerHTML = `
-      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">My Jobs</h3>
-      <div class="grid">${allJobs.map(j => `
-        <div class="card" onclick="navigate('job',{id:'${j.id}'})">
-          <div class="card-header">
-            <h3>${esc(j.title)}</h3>
-            <span class="status-badge status-${j.status}">${j.status}</span>
-          </div>
-          <p>${esc(j.description)}</p>
-          <div class="card-footer">
-            <span class="price price-budget">$${j.budgetUsd}</span>
-            <span class="cat-tag">${esc(j.category)}</span>
-          </div>
-        </div>
-      `).join('')}</div>
-    `;
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadMyLoads() {
-  const el = document.getElementById('dash-my-loads');
-  if (!el) return;
-  try {
-    const statuses = ['open', 'booked', 'in_transit', 'delivered', 'cancelled'];
-    const loadGroups = await Promise.all(statuses.map(s => api('GET', `/loads?status=${s}`).catch(() => [])));
-    const mine = loadGroups.flat().filter(l => l.shipperId === state.user.id);
-    if (!mine.length) {
-      el.innerHTML = `${emptyState('🚚', 'No loads yet', 'Post your first load to start getting quotes.')}
-      <div style="text-align:center;margin-top:1rem"><button class="btn btn-primary" onclick="navigate('create-load')">Post Your First Load</button></div>`;
-      return;
-    }
-    el.innerHTML = `<div class="grid">${renderLoadCards(mine)}</div>`;
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadMyQuotes() {
-  const el = document.getElementById('dash-my-quotes');
-  if (!el) return;
-  try {
-    const quotes = await api('GET', '/quotes/my');
-    if (!quotes.length) {
-      el.innerHTML = emptyState('📝', 'No quotes yet', 'Browse open loads and submit your first quote.');
-      return;
-    }
-    el.innerHTML = quotes.map(q => `
-      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(q.loadId)}'})" style="cursor:pointer">
-        <div class="bid-body">
-          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-            <span class="bid-amount">$${q.amountUsd}</span>
-            <span class="status-badge status-${q.status}">${q.status}</span>
-          </div>
-          <div class="bid-message">${esc(q.message)}</div>
-          <div class="bid-meta">Load ID: ${q.loadId} · ETA ${pluralizeDays(q.estimatedDays)}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadMyInvoices() {
-  const el = document.getElementById('dash-my-invoices');
-  if (!el) return;
-  try {
-    const invoices = await api('GET', '/invoices/my');
-    if (!invoices.length) {
-      el.innerHTML = emptyState('🧾', 'No invoices yet', 'Delivered loads will appear here for payment.');
-      return;
-    }
-    el.innerHTML = invoices.map(inv => `
-      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
-        <div class="bid-body">
-          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-            <span class="bid-amount">$${inv.amountUsd}</span>
-            <span class="status-badge status-${inv.status}">${inv.status}</span>
-          </div>
-          <div class="bid-meta">Load: ${inv.loadId}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-async function loadMyCarrierInvoices() {
-  const el = document.getElementById('dash-my-carrier-invoices');
-  if (!el) return;
-  try {
-    const invoices = await api('GET', '/invoices/my');
-    if (!invoices.length) {
-      el.innerHTML = emptyState('🧾', 'No invoices yet', 'Generate invoices after loads are delivered.');
-      return;
-    }
-    el.innerHTML = invoices.map(inv => `
-      <div class="bid-item" onclick="navigate('load',{id:'${encodeURIComponent(inv.loadId)}'})" style="cursor:pointer">
-        <div class="bid-body">
-          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
-            <span class="bid-amount">$${inv.amountUsd}</span>
-            <span class="status-badge status-${inv.status}">${inv.status}</span>
-          </div>
-          <div class="bid-meta">Carrier payout: $${inv.carrierPayoutUsd}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    el.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-function openLoadById(e) {
-  e.preventDefault();
-  const id = document.getElementById('driver-load-id').value.trim();
-  if (!id) return;
-  navigate('load', { id });
-}
-
-/* ===== PROFILE ===== */
-async function renderProfile(app) {
-  const userId = state.params.id;
-  app.innerHTML = '<div class="loading">Loading…</div>';
-  try {
-    const reviews = await api('GET', `/reviews/user/${userId}`);
-    const avgRating = reviews.length
-      ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-      : null;
-    app.innerHTML = `
-      <div class="detail-card" style="margin-bottom:1.5rem">
-        <div class="profile-header">
-          <div class="profile-avatar">${userId[0].toUpperCase()}</div>
-          <div class="profile-info">
-            <h2>User Profile</h2>
-            ${avgRating ? `<p>⭐ ${avgRating} avg rating (${reviews.length} reviews)</p>` : '<p>No reviews yet</p>'}
-          </div>
-        </div>
-      </div>
-      <div class="detail-card">
-        <h3 style="margin-bottom:1rem">Reviews (${reviews.length})</h3>
-        ${reviews.length ? reviews.map(renderReview).join('') : '<p style="color:var(--text-muted);font-size:.875rem">No reviews yet.</p>'}
-      </div>
-    `;
-  } catch (err) {
-    app.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-  }
-}
-
-/* ===== REVIEWS ===== */
-function renderReviewFormInline(type, refId, revieweeId) {
-  const formId = `review-form-${refId}`;
-  return `
-    <form id="${formId}" onsubmit="submitReview(event,'${formId}','${revieweeId}','${type}','${refId}')">
-      <div class="form-group">
-        <label style="font-size:.8rem">Rating</label>
-        <div class="star-input" id="stars-${refId}">
-          ${[1,2,3,4,5].map(i => `<span data-val="${i}" onclick="setStars('${refId}',${i})">☆</span>`).join('')}
-        </div>
-        <input type="hidden" id="rating-val-${refId}" value="0" />
-      </div>
-      <div class="form-group">
-        <textarea placeholder="Write your review…" id="review-comment-${refId}" style="min-height:70px;font-size:.85rem" required></textarea>
-      </div>
-      <div id="review-err-${refId}" class="alert alert-error hidden"></div>
-      <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center">Submit Review</button>
-    </form>
-  `;
-}
-
-function setStars(refId, val) {
-  document.getElementById(`rating-val-${refId}`).value = val;
-  document.querySelectorAll(`#stars-${refId} span`).forEach(s => {
-    s.textContent = parseInt(s.dataset.val) <= val ? '★' : '☆';
-    s.classList.toggle('filled', parseInt(s.dataset.val) <= val);
-  });
-}
-
-async function submitReview(e, formId, revieweeId, type, refId) {
-  e.preventDefault();
-  const rating = parseInt(document.getElementById(`rating-val-${refId}`).value);
-  const comment = document.getElementById(`review-comment-${refId}`).value;
-  const errEl = document.getElementById(`review-err-${refId}`);
-  errEl.classList.add('hidden');
-  if (!rating) { errEl.textContent = 'Please select a rating.'; errEl.classList.remove('hidden'); return; }
-  try {
-    const body = { revieweeId, rating, comment };
-    if (type === 'gig') body.gigId = refId;
-    if (type === 'job') body.jobId = refId;
-    await api('POST', '/reviews', body);
-    document.getElementById(formId).innerHTML = '<div class="alert alert-success">Review submitted! ✅</div>';
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  }
-}
-
-function renderReview(r) {
-  const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-  return `
-    <div class="review-item">
-      <div class="review-header">
-        <span class="stars">${stars}</span>
-        <span class="meta">${formatDate(r.createdAt)}</span>
-      </div>
-      <div class="review-comment">${esc(r.comment)}</div>
-    </div>
-  `;
-}
-
-/* ===== HELPERS ===== */
-function esc(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
-}
-
-function formatDate(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function emptyState(icon, title, msg) {
-  return `<div class="empty"><div class="empty-icon">${icon}</div><h3>${title}</h3><p>${msg}</p></div>`;
-}
-
-function categoryOptions(selected) {
-  const cats = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Music', 'Business', 'Data', 'Other'];
-  return cats.map(c => `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`).join('');
-}
-
-function showToast(msg, isError) {
-  const t = document.createElement('div');
-  const bg = isError ? '#b91c1c' : '#1f2937';
-  t.style.cssText = `position:fixed;bottom:1.5rem;right:1.5rem;background:${bg};color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s ease;cursor:pointer`;
-  t.textContent = (isError ? '✕ ' : '✓ ') + msg;
-  t.title = isError ? 'Click to dismiss' : '';
-  t.addEventListener('click', () => t.remove());
-  document.body.appendChild(t);
-  // Error toasts stay until clicked; success toasts auto-dismiss after 3 s
-  if (!isError) setTimeout(() => t.remove(), 3000);
-}
-
-function pluralizeDays(n) {
-  return `${n} day${n !== 1 ? 's' : ''}`;
-}
-
-// Close modal on overlay click
-document.getElementById('auth-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeAuth();
-});
+  // Run all calcs on load
+  calcBD(); calcRG(); calcWV(); calcHI(); calcDR(); calcPH();
 </script>
 </body>
 </html>
