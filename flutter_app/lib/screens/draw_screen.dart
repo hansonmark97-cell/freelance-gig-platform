@@ -20,7 +20,20 @@ import 'review_screen.dart';
 const double _kSnapRadius = 22.0; // px – snap-close distance
 
 class DrawScreen extends StatefulWidget {
-  const DrawScreen({super.key});
+  /// Optional: pre-fill the canvas with these world-inch polygon points
+  /// (used when opening a preloaded blueprint).
+  final List<Offset>? initialPointsIn;
+  final double? initialPpi;
+  final String? title;
+  final double? initialThicknessMm;
+
+  const DrawScreen({
+    super.key,
+    this.initialPointsIn,
+    this.initialPpi,
+    this.title,
+    this.initialThicknessMm,
+  });
 
   @override
   State<DrawScreen> createState() => _DrawScreenState();
@@ -41,6 +54,23 @@ class _DrawScreenState extends State<DrawScreen> {
 
   bool _isAnalyzing = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill points from a blueprint template
+    if (widget.initialPointsIn != null && widget.initialPointsIn!.isNotEmpty) {
+      final ppi = widget.initialPpi ?? 30.0;
+      _ppi = ppi;
+      _points.addAll(
+        widget.initialPointsIn!.map((p) => Offset(p.dx * ppi, p.dy * ppi)),
+      );
+      _isClosed = true;
+    }
+    if (widget.initialThicknessMm != null) {
+      _thicknessMm = widget.initialThicknessMm!;
+    }
+  }
 
   static const _kerfDefaults = {
     'plasma': 1.5,
@@ -201,7 +231,7 @@ class _DrawScreenState extends State<DrawScreen> {
       backgroundColor: cs.background,
       appBar: AppBar(
         backgroundColor: cs.surface,
-        title: const Text('Draw Shape'),
+        title: Text(widget.title ?? 'Draw Shape'),
         foregroundColor: cs.primary,
         actions: [
           if (_points.isNotEmpty)
