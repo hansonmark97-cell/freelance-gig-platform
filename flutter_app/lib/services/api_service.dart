@@ -24,6 +24,65 @@ class ApiService {
   };
 
   // ---------------------------------------------------------------------------
+  // POST /calibrate  (draw-mode synthetic calibration)
+  // Creates a calibration session using a known PPI value without an image.
+  // refPixelLength = ppi (i.e. 1 real inch = ppi pixels).
+  // ---------------------------------------------------------------------------
+  Future<Map<String, dynamic>> draftCalibrate({required double ppi}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/calibrate'),
+      headers: _headers,
+      body: jsonEncode({
+        'refPixelLength': ppi,
+        'refRealInches': 1.0,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  // ---------------------------------------------------------------------------
+  // POST /analyze  (draw-mode — pass segments directly, no image)
+  // ---------------------------------------------------------------------------
+  Future<Map<String, dynamic>> analyzeSegments({
+    required String sessionId,
+    required List<Map<String, dynamic>> segments,
+    double thicknessMm = 10.0,
+    double kerfMm = 1.5,
+    double wireDiameterMm = 0.9,
+    double insideRadiusMm = 10.0,
+    double weldLegMm = 10.0,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/analyze'),
+      headers: _headers,
+      body: jsonEncode({
+        'sessionId': sessionId,
+        'segments': segments,
+        'thicknessMm': thicknessMm,
+        'kerfMm': kerfMm,
+        'wireDiameterMm': wireDiameterMm,
+        'insideRadiusMm': insideRadiusMm,
+        'weldLegMm': weldLegMm,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /export/pdf/download?sessionId=...
+  // ---------------------------------------------------------------------------
+  Future<File> downloadPdf({required String sessionId}) async {
+    return downloadExport(sessionId: sessionId, exportType: 'pdf');
+  }
+
+  // ---------------------------------------------------------------------------
+  // GET /export/dxf/download?sessionId=...
+  // ---------------------------------------------------------------------------
+  Future<File> downloadDxf({required String sessionId}) async {
+    return downloadExport(sessionId: sessionId, exportType: 'dxf');
+  }
+
+  // ---------------------------------------------------------------------------
   // POST /calibrate
   // ---------------------------------------------------------------------------
   Future<Map<String, dynamic>> calibrate({
