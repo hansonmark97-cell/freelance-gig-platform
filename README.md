@@ -1,5 +1,5 @@
-# WeldScan 3D
-A photo-to-blueprint app for welders and fabricators.
+# WeldScan Platform
+A photo-to-blueprint platform for welders and fabricators.
 
 ## Overview
 WeldScan 3D lets you photograph a metal part, automatically detects its contour via computer vision, and produces:
